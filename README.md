@@ -1,6 +1,7 @@
-# CajuScan
-
-![CajuScan Banner](https://raw.githubusercontent.com/marotoweb/cajuscan/main/assets/banner.png )
+<h1 align="center">
+  <img src="https://raw.githubusercontent.com/marotoweb/cajuscan/main/assets/icon.png" width="60" alt="CajuScan Icon">
+  CajuScan
+</h1>
 
 **CajuScan** é uma aplicação móvel para Android, desenvolvida em Flutter, que simplifica o registo de despesas em Portugal. A aplicação permite digitalizar o QR Code (ATCUD) presente nas faturas portuguesas, extrair automaticamente os dados da transação e enviá-los para a aplicação de gestão financeira [Cashew](https://cashewapp.web.app/ ).
 
