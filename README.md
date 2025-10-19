@@ -6,6 +6,25 @@
 
 O objetivo é automatizar o processo manual de inserir despesas, poupando tempo e reduzindo erros.
 
+---
+
+## 📸 Screenshots
+
+Apresentação visual das principais funcionalidades da aplicação CajuScan.
+
+<p align="center">
+  <img src="screenshots/Screenshot_1.png" width="200" alt="Página Inicial">
+  <img src="screenshots/Screenshot_2.png" width="200" alt="Página de Digitalização">
+  <img src="screenshots/Screenshot_3.png" width="200" alt="Página de Confirmação">
+</p>
+<p align="center">
+  <img src="screenshots/Screenshot_4.png" width="200" alt="Gestão de Comerciantes">
+  <img src="screenshots/Screenshot_5.png" width="200" alt="Gestão de Categorias">
+  <img src="screenshots/Screenshot_6.png" width="200" alt="Página de Definições">
+</p>
+
+---
+
 ## ✨ Funcionalidades Principais
 
 *   **Leitura de QR Code de Faturas:** Utiliza a câmara do telemóvel para digitalizar e processar instantaneamente os QR Codes das faturas emitidas em Portugal.
