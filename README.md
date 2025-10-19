@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="https://raw.githubusercontent.com/marotoweb/cajuscan/main/assets/icon.png" width="60" alt="CajuScan Icon">
+  <img src="assets/icon/icon.png" width="60" alt="CajuScan Icon">
   CajuScan
 </h1>
 
