@@ -93,5 +93,3 @@ Este projeto é disponibilizado sob a licença MIT.
 A aplicação **CajuScan** é fornecida "COMO ESTÁ", sem garantias de qualquer tipo. O autor não se responsabiliza por qualquer mau funcionamento, perda de dados ou erros de registo que possam surgir do uso desta aplicação. É da exclusiva responsabilidade do utilizador verificar a correção dos dados.
 
 ---
-
-Desenvolvido por **Rob Cc** com IA.
