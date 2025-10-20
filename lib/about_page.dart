@@ -40,7 +40,7 @@ class _AboutPageState extends State<AboutPage> {
   @override
   Widget build(BuildContext context) {
     const authorName = 'Roberto Cc';
-    const githubUrl = 'https://github.com/marotoweb/cajuscan';
+    const githubUrl = 'https://github.com/marotoweb/cajuscan_app';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Sobre o CajuScan')),
