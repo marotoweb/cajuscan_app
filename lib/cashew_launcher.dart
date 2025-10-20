@@ -13,22 +13,30 @@ class CashewLauncher {
     required String? subcategory,
     required String title,
   }) async {
-    // 1. Consulta o serviço para saber se o utilizador quer confirmar no Cashew.
-    final bool useConfirmationRoute = await _settingsService.getConfirmOnCashew();
+    // Consulta o serviço para saber se o utilizador quer confirmar no Cashew.
+    final bool useConfirmationRoute = await _settingsService
+        .getConfirmOnCashew();
 
-    // 2. Decide qual o endpoint a usar com base na preferência do utilizador.
-    final String endpoint = useConfirmationRoute ? 'addTransactionRoute' : 'addTransaction';
+    // Decide qual o endpoint a usar com base na preferência do utilizador.
+    final String endpoint = useConfirmationRoute
+        ? 'addTransactionRoute'
+        : 'addTransaction';
 
-    // 3. Constrói o mapa de parâmetros da query, garantindo que o valor é negativo.
+    // Constrói o mapa de parâmetros da query, garantindo que o valor é negativo.
+    // Os valores aqui estão no seu formato original (ex: "Alimentação").
     final Map<String, String> queryParams = {
-      'amount': (-fatura.valorTotal).toStringAsFixed(2), // Garante valor negativo e 2 casas decimais
-      'date': fatura.data.toIso8601String().split('T').first, // Formato AAAA-MM-DD
+      'amount': (-fatura.valorTotal).toStringAsFixed(
+        2,
+      ), // Garante valor negativo e 2 casas decimais
+      'date': fatura.data
+          .toIso8601String()
+          .split('T')
+          .first, // Formato AAAA-MM-DD
       'title': title,
-      'notes': 'Fatura importada via CajuScan\nNIF: ${fatura.nifComerciante}',
+      'notes': 'Fatura importada via QR Code\nNIF: ${fatura.nifComerciante}',
     };
 
-    // 4. Adiciona a categoria e subcategoria apenas se não estiverem vazias.
-    // O Cashew ignora categorias vazias e permite ao utilizador selecionar na app.
+    // Adiciona a categoria e subcategoria ao mapa apenas se não estiverem vazias.
     if (category.isNotEmpty) {
       queryParams['category'] = category;
     }
@@ -36,7 +44,9 @@ class CashewLauncher {
       queryParams['subcategory'] = subcategory;
     }
 
-    // 5. Constrói o URI final com todos os componentes.
+    // Constrói o URI final usando o construtor Uri.
+    // Este construtor trata AUTOMATICAMENTE da codificação de caracteres especiais (como 'ã', 'ç', espaços, etc.)
+    // nos valores do mapa 'queryParameters'. Esta é a melhor prática.
     final uri = Uri(
       scheme: 'https',
       host: 'cashewapp.web.app',
@@ -44,12 +54,14 @@ class CashewLauncher {
       queryParameters: queryParams,
     );
 
-    // 6. Tenta abrir o URL, lançando uma exceção clara em caso de falha.
+    // Tenta abrir o URL, lançando uma exceção clara em caso de falha.
     if (await canLaunchUrl(uri)) {
       // Usa o modo 'externalApplication' para garantir que abre noutra app e não num webview.
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      throw Exception('Não foi possível abrir o Cashew. Verifique se a aplicação está instalada e configurada para abrir links.');
+      throw Exception(
+        'Não foi possível abrir o Cashew. Verifique se a aplicação está instalada e configurada para abrir links.',
+      );
     }
   }
 }
