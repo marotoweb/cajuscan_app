@@ -1,3 +1,14 @@
+[![GitHub Latest Release][releases_shield]][latest_release]
+[![GitHub All Releases][downloads_total_shield]][releases]
+
+[latest_release]: https://github.com/marotoweb/cajuscan_app/releases/latest
+
+[releases_shield]: https://img.shields.io/github/release/marotoweb/cajuscan_app.svg?style=popout
+
+[releases]: https://github.com/marotoweb/cajuscan_app/releases
+
+[downloads_total_shield]: https://img.shields.io/github/downloads/marotoweb/cajuscan_app/total
+
 <h1 align="center">
   <img src="assets/icon/icon.png" width="60" alt="CajuScan Icon">
   CajuScan
