@@ -67,7 +67,13 @@ jobs:
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk CajuScan-${{ github.ref_name }}.apk
 
-      # 8. Fazer Upload do APK para a Release
+      # 8. Ler notas para a Release
+      # Esta etapa lê o conteúdo do ficheiro RELEASE_NOTES.md para usar como corpo da release.       
+      - name: Read release body from file
+        id: read_release_body
+        run: echo "::set-output name=body::$(cat RELEASE_NOTES.md)"
+
+      # 9. Fazer Upload do APK para a Release
       # Esta ação faz o upload do APK compilado e anexa-o à página da Release no GitHub.
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v2
@@ -76,6 +82,9 @@ jobs:
         with:
           # O nome do ficheiro que será anexado à release.
           files: CajuScan-${{ github.ref_name }}.apk
-          body: |
-            🚀 Nova versão publicada automaticamente!
-            - Compilação Android de produção.
+          # O nome / título da release.
+          name: "CajuScan ${{ github.ref_name }}"
+          # O nome da tag associada à release.
+          tag_name: ${{ github.ref_name }}
+          # O corpo da release, lido do ficheiro RELEASE_NOTES.md.
+          body: ${{ steps.read_release_body.outputs.body }}
