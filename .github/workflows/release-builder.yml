@@ -71,6 +71,11 @@ jobs:
       # Esta ação faz o upload do APK compilado e anexa-o à página da Release no GitHub.
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # O nome do ficheiro que será anexado à release.
           files: CajuScan-${{ github.ref_name }}.apk
+          body: |
+            🚀 Nova versão publicada automaticamente!
+            - Compilação Android de produção.
