@@ -71,9 +71,12 @@ jobs:
       # Esta etapa lê o conteúdo do ficheiro RELEASE_NOTES.md para usar como corpo da release.       
       - name: Read release body from file
         run: |
-          echo "RELEASE_BODY<<EOF" >> $GITHUB_ENV
+          # Gera um delimitador único para evitar conflitos com o conteúdo do MD
+          DELIMITER=$(dd if=/dev/urandom bs=15 count=1 2>/dev/null | base64)
+          echo "RELEASE_BODY<<$DELIMITER" >> $GITHUB_ENV
           cat RELEASE_NOTES.md >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "$DELIMITER" >> $GITHUB_ENV
 
       # 9. Fazer Upload do APK para a Release
       # Esta ação faz o upload do APK compilado e anexa-o à página da Release no GitHub.
