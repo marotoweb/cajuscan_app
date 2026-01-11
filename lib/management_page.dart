@@ -60,8 +60,12 @@ class _ManagementPageState extends State<ManagementPage> {
       ),
     );
 
+    if (!mounted) return;
+
     if (shouldDelete == true) {
       await _profileService.deleteProfile(nif);
+
+      if (!mounted) return;
       _loadData();
     }
   }
@@ -75,7 +79,7 @@ class _ManagementPageState extends State<ManagementPage> {
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             final subcategories = _allCategories[selectedCategory] ?? [];
@@ -147,7 +151,9 @@ class _ManagementPageState extends State<ManagementPage> {
                         subcategory: selectedSubcategory,
                       );
                       await _profileService.saveProfile(nif, newProfile);
-                      if (mounted) Navigator.of(context).pop();
+
+                      if (!context.mounted) return;
+                      Navigator.of(context).pop();
                       _loadData();
                     }
                   },
@@ -169,7 +175,7 @@ class _ManagementPageState extends State<ManagementPage> {
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             final subcategories = _allCategories[selectedCategory] ?? [];
@@ -243,6 +249,7 @@ class _ManagementPageState extends State<ManagementPage> {
                   onPressed: () async {
                     final nif = nifController.text;
                     final name = nameController.text;
+
                     if (nif.length != 9) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -259,6 +266,9 @@ class _ManagementPageState extends State<ManagementPage> {
                     }
 
                     final existingProfiles = await _profilesFuture;
+
+                    if (!context.mounted) return;
+
                     if (existingProfiles.containsKey(nif)) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -273,8 +283,11 @@ class _ManagementPageState extends State<ManagementPage> {
                       category: selectedCategory ?? '',
                       subcategory: selectedSubcategory,
                     );
+
                     await _profileService.saveProfile(nif, newProfile);
-                    if (mounted) Navigator.of(context).pop();
+
+                    if (!context.mounted) return;
+                    Navigator.of(context).pop();
                     _loadData();
                   },
                   child: const Text('Adicionar'),
