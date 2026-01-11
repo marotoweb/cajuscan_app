@@ -1,21 +1,6 @@
 [![GitHub Latest Release][releases_shield]][latest_release]
 [![GitHub All Releases][downloads_total_shield]][releases]
-[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/O_TEU_USER/O_TEU_REPO)
 
-<a href="https://f-droid.org/en/packages/com.marotoweb.cajuscan_app/" target="_blank">
-    <img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-    alt="Get it on F-Droid"
-    height="80">
-</a>
-
-<p align="left">
-  <a href="https://github.com/O_TEU_USER/O_TEU_REPO">
-    <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" height="40">
-  </a>
-  <a href="https://f-droid.org/packages/TEU.PACOTE.AQUI/">
-    <img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="40">
-  </a>
-</p>
 [latest_release]: https://github.com/marotoweb/cajuscan_app/releases/latest
 
 [releases_shield]: https://img.shields.io/github/release/marotoweb/cajuscan_app.svg?style=popout
