@@ -1,0 +1,7 @@
+New in Version 1.0.2
+
+- Removed mobile_scanner dependency (Google ML Kit)
+- Added flutter_zxing ^2.2.1 for FOSS compliance
+- Refactored ScannerPage to use ReaderWidget with onScan callback
+- Preserved UI layout using custom CustomPainters
+- Prepared project for F-Droid publication

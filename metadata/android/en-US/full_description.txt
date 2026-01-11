@@ -1,0 +1,14 @@
+CajuScan is a mobile Android application, developed in Flutter, that simplifies expense recording in Portugal.
+The app allows you to scan the QR Code (ATCUD) present on Portuguese invoices, automatically extract transaction data, and send it to the financial management app Cashew.
+
+The goal is to automate the manual process of entering expenses, saving time and reducing errors.
+
+Features:
+ - Scan ATCUD QR Codes from Portuguese invoices
+ - Automatic data extraction (amount, date, vendor, etc.)
+ - Integration with the Cashew app for financial tracking
+ - Simple, usability-focused interface
+
+Developed with privacy in mind: no tracking, no ads, no data sent to external servers.
+
+Open source under MIT license — contributions are welcome!

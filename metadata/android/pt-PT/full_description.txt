@@ -1,0 +1,14 @@
+ CajuScan é uma aplicação móvel para Android, desenvolvida em Flutter, que simplifica o registo de despesas em Portugal.
+A aplicação permite digitalizar o QR Code (ATCUD) presente nas faturas portuguesas, extrair automaticamente os dados da transação e enviá-los para a aplicação de gestão financeira Cashew.
+
+O objetivo é automatizar o processo manual de inserir despesas, poupando tempo e reduzindo erros.
+
+Funcionalidades:
+- Leitura de QR Code ATCUD de faturas portuguesas
+- Extração automática de dados (valor, data, fornecedor, etc.)
+- Integração com a app Cashew para registo financeiro
+- Interface simples e focada em usabilidade
+
+Desenvolvido com foco em privacidade: sem rastreamento, sem anúncios, sem dados enviados para servidores externos.
+
+Código aberto e licença MIT - contribuições são bem-vindas!

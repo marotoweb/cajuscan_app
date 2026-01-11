@@ -42,25 +42,32 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       _isProcessing = true;
     });
-    String message = 'Exportação iniciada...'; // Mensagem padrão
+
+    String statusMessage = '';
+    bool isError = false;
+
     try {
       await _backupService.exportData();
-      // A mensagem de sucesso é implícita pela ação de partilha
-      return;
+      statusMessage = 'Exportação concluída com sucesso!';
     } catch (e) {
-      message = e.toString();
+      statusMessage = e.toString();
+      isError = true;
     } finally {
-      // Verificar se o widget ainda está montado
-      if (!mounted) return;
-      setState(() {
-        _isProcessing = false;
-      });
-      // Apenas mostra o snackbar em caso de erro
-      if (message != 'Exportação iniciada...') {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
+      // Limpeza do estado de processamento
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
       }
+    }
+
+    if (statusMessage.isNotEmpty && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(statusMessage),
+          backgroundColor: isError ? Colors.red : Colors.green,
+        ),
+      );
     }
   }
 
@@ -68,20 +75,30 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       _isProcessing = true;
     });
-    String message = '';
+
+    String statusMessage = '';
+    bool isError = false;
+
     try {
-      message = await _backupService.importData();
+      statusMessage = await _backupService.importData();
     } catch (e) {
-      message = e.toString();
+      statusMessage = e.toString();
+      isError = true;
     } finally {
-      // Verificar se o widget ainda está montado
-      if (!mounted) return;
-      setState(() {
-        _isProcessing = false;
-      });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    }
+
+    if (statusMessage.isNotEmpty && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(statusMessage),
+          backgroundColor: isError ? Colors.red : Colors.green,
+        ),
+      );
     }
   }
 
@@ -102,9 +119,11 @@ class _SettingsPageState extends State<SettingsPage> {
                   value: _confirmOnCashew,
                   onChanged: (bool value) async {
                     await _settingsService.setConfirmOnCashew(value);
-                    setState(() {
-                      _confirmOnCashew = value;
-                    });
+                    if (mounted) {
+                      setState(() {
+                        _confirmOnCashew = value;
+                      });
+                    }
                   },
                   secondary: const Icon(Icons.touch_app),
                 ),
