@@ -56,7 +56,19 @@ jobs:
       - name: Clean project
         run: flutter clean
 
-      # 6. Compilar o APK de Release
+      # 6.1. Descodificar a Keystore e criar o key.properties
+      - name: Decode Keystore and Create Properties
+        run: |
+          # Descodifica a keystore para a raiz do projeto (onde o Gradle espera)
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > upload-keystore.jks
+          
+          # Cria o ficheiro key.properties dentro da pasta android/
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=../../upload-keystore.jks" >> android/key.properties
+
+      # 6.2 Compilar o APK de Release
       # O comando principal que compila a aplicação em modo de produção.
       - name: Build APK
         run: flutter build apk --release
