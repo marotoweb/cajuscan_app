@@ -1,13 +1,13 @@
 [![GitHub Latest Release][releases_shield]][latest_release]
 [![GitHub All Releases][downloads_total_shield]][releases]
 
-[latest_release]: https://github.com/marotoweb/cajuscan_app/releases/latest
+[latest_release]: https://github.com/marotoweb/cajuscan/releases/latest
 
-[releases_shield]: https://img.shields.io/github/release/marotoweb/cajuscan_app.svg?style=popout
+[releases_shield]: https://img.shields.io/github/release/marotoweb/cajuscan.svg?style=popout
 
-[releases]: https://github.com/marotoweb/cajuscan_app/releases
+[releases]: https://github.com/marotoweb/cajuscan/releases
 
-[downloads_total_shield]: https://img.shields.io/github/downloads/marotoweb/cajuscan_app/total
+[downloads_total_shield]: https://img.shields.io/github/downloads/marotoweb/cajuscan/total
 
 <h1 align="center">
   <img src="assets/icon/icon.png" width="60" alt="CajuScan Icon">
@@ -58,12 +58,13 @@ Apresentação visual das principais funcionalidades da aplicação CajuScan.
 *   **Interface Intuitiva:**
     *   Scanner de câmara com uma sobreposição clara para facilitar o alinhamento do QR Code.
     *   Design limpo e focado na simplicidade de uso.
+*   **Privacidade e Segurança:** Aplicação assinada digitalmente e preparada para builds reprodutíveis (**Reproducible Builds**).
 
 ## 🛠️ Tecnologias Utilizadas
 
 *   **Framework:** [Flutter](https://flutter.dev/ )
 *   **Linguagem:** [Dart](https://dart.dev/ )
-*   **Leitura de QR Code:** [mobile_scanner](https://pub.dev/packages/mobile_scanner )
+*   **Leitura de QR Code:** [flutter_zxing](https://pub.dev/packages/flutter_zxing)
 *   **Armazenamento Local:** [shared_preferences](https://pub.dev/packages/shared_preferences )
 *   **Interação com Outras Apps:** [url_launcher](https://pub.dev/packages/url_launcher )
 *   **Seleção de Ficheiros (Backup/Restauro):** [file_picker](https://pub.dev/packages/file_picker )
@@ -96,10 +97,11 @@ Para compilar o projeto, precisa de ter o [Flutter SDK](https://docs.flutter.dev
     flutter build apk --release
     ```
     O ficheiro de instalação será gerado em `build/app/outputs/flutter-apk/app-release.apk`.
+    *Nota: Para gerar uma build assinada idêntica à oficial, é necessário configurar as variáveis de ambiente da Keystore.*
 
 ## 📄 Licença e Isenção de Responsabilidade
 
-Este projeto é disponibilizado sob a licença MIT.
+Este projeto é disponibilizado sob a licença **MIT**.
 
 A aplicação **CajuScan** é fornecida "COMO ESTÁ", sem garantias de qualquer tipo. O autor não se responsabiliza por qualquer mau funcionamento, perda de dados ou erros de registo que possam surgir do uso desta aplicação. É da exclusiva responsabilidade do utilizador verificar a correção dos dados.
 
