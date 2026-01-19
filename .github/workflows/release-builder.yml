@@ -42,9 +42,9 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38.6' # Substitua pela sua versão do Flutter, se for diferente.
+          flutter-version: '3.38.6'
           channel: 'stable'
-          cache: true # Ativa o cache para acelerar builds futuros.
+          cache: true
 
       # 4. Instalar Dependências do Projeto
       # Executa `flutter pub get` para baixar todos os pacotes listados no pubspec.yaml.
