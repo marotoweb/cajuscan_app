@@ -83,9 +83,7 @@ android {
             // Esta parte é crucial para o Kotlin DSL no Flutter
             packaging {
                 jniLibs {
-                    // Impede que o processo de build altere os binários (strip)
-                    // o que às vezes reintroduz metadados
-                    doNotStrip("**/*.so")
+                    excludes.add("**/libapp.so.debug")
                 }
             }
         }
