@@ -19,7 +19,13 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = "11"
+        
+        freeCompilerArgs += listOf(
+            "-Xno-call-assertions",
+            "-Xno-receiver-assertions",
+            "-Xdump-declarations-to=null"
+        )
     }
 
     defaultConfig {
@@ -41,7 +47,7 @@ android {
             }
         }
     }
-    
+
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         kotlinOptions {
             // Mantemos as suas flags de segurança
@@ -51,7 +57,7 @@ android {
             freeCompilerArgs += listOf("-Xdump-declarations-to=null") 
         
             // Garante que o bytecode não contenha informações da sua máquina
-            jvmTarget = "1.8" 
+            jvmTarget = "11" 
         }
     }
 

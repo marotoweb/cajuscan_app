@@ -63,7 +63,7 @@ jobs:
           echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=../../upload-keystore.jks" >> android/key.properties
 
-      # 6. Patch Reproducible Build (Global)
+      # 6.   Patch Reproducible Build (Global)
       - name: Remove build-id from all native dependencies
         run: |
           # Define o cache explicitamente
@@ -85,9 +85,9 @@ jobs:
           export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
           # Build limpo e determinístico
           flutter build apk --release \
-            --no-tree-shake-icons \
-            --obfuscate \
-            --split-debug-info=build/app/outputs/symbols
+          --no-tree-shake-icons \
+          --obfuscate \
+          --split-debug-info=build/app/outputs/symbols \
 
       # 8. Renomear o APK (Opcional, mas recomendado)
       # Renomeia o `app-release.apk` para um nome mais descritivo, incluindo a versão da tag.
