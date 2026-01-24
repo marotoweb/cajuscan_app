@@ -80,12 +80,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Esta parte é crucial para o Kotlin DSL no Flutter
-            packaging {
-                jniLibs {
-                    excludes.add("**/libapp.so.debug")
-                }
-            }
         }
     }
 
