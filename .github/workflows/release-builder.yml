@@ -84,10 +84,8 @@ jobs:
           # Isto garante que todos os ficheiros dentro do APK tenham a mesma data do commit
           export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
           # Build limpo e determinístico
-          flutter build apk --release \
-          --no-tree-shake-icons \
-          --obfuscate \
-          --split-debug-info=build/app/outputs/symbols \
+          flutter build apk --release
+
 
       # 8. Renomear o APK (Opcional, mas recomendado)
       # Renomeia o `app-release.apk` para um nome mais descritivo, incluindo a versão da tag.

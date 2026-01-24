@@ -14,18 +14,12 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "11"
-        
-        freeCompilerArgs += listOf(
-            "-Xno-call-assertions",
-            "-Xno-receiver-assertions",
-            "-Xdump-declarations-to=null"
-        )
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
@@ -37,29 +31,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-
-        externalNativeBuild {
-            cmake {
-                // Remove caminhos absolutos e o Build ID que causaram o erro no teu relatório
-                arguments("-DCMAKE_C_FLAGS=-fdebug-prefix-map=${project.rootDir.absolutePath}=.",
-                          "-DCMAKE_CXX_FLAGS=-fdebug-prefix-map=${project.rootDir.absolutePath}=.",
-                          "-Wl,--build-id=none")
-            }
-        }
     }
 
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        kotlinOptions {
-            // Mantemos as suas flags de segurança
-            freeCompilerArgs += listOf("-Xno-call-assertions", "-Xno-receiver-assertions")
-        
-            // Remove caminhos absolutos das exceções e metadados
-            freeCompilerArgs += listOf("-Xdump-declarations-to=null") 
-        
-            // Garante que o bytecode não contenha informações da sua máquina
-            jvmTarget = "11" 
-        }
-    }
 
     val keystorePropertiesFile = rootProject.file("key.properties")
     val keystoreProperties = Properties()
