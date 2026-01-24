@@ -31,6 +31,16 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        externalNativeBuild {
+            cmake {
+                // Adicione aqui diretamente
+                cppFlags += "-Wl,--build-id=none"
+                // E também as outras que discutimos para os caminhos:
+                arguments("-DCMAKE_C_FLAGS=-fdebug-prefix-map=${project.rootDir.absolutePath}=.",
+                          "-DCMAKE_CXX_FLAGS=-fdebug-prefix-map=${project.rootDir.absolutePath}=.")
+            }
+        }
     }
 
 
