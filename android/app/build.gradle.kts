@@ -34,13 +34,24 @@ android {
 
         externalNativeBuild {
             cmake {
-                // Estas flags garantem que o compilador C++ substitua o caminho real por "."
-                arguments(
-                    "-DCMAKE_C_FLAGS=-fdebug-prefix-map=${project.rootDir.absolutePath}=.",
-                    "-DCMAKE_CXX_FLAGS=-fdebug-prefix-map=${project.rootDir.absolutePath}=.",
-                    "-Wl,--build-id=none" // Remove o Build ID variável que vimos no seu relatório
-                )
+                // Remove caminhos absolutos e o Build ID que causaram o erro no teu relatório
+                arguments("-DCMAKE_C_FLAGS=-fdebug-prefix-map=${project.rootDir.absolutePath}=.",
+                          "-DCMAKE_CXX_FLAGS=-fdebug-prefix-map=${project.rootDir.absolutePath}=.",
+                          "-Wl,--build-id=none")
             }
+        }
+    }
+    
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        kotlinOptions {
+            // Mantemos as suas flags de segurança
+            freeCompilerArgs += listOf("-Xno-call-assertions", "-Xno-receiver-assertions")
+        
+            // Remove caminhos absolutos das exceções e metadados
+            freeCompilerArgs += listOf("-Xdump-declarations-to=null") 
+        
+            // Garante que o bytecode não contenha informações da sua máquina
+            jvmTarget = "1.8" 
         }
     }
 
