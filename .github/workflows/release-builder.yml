@@ -86,8 +86,8 @@ jobs:
           # Build limpo e determinístico
           flutter build apk --release \
             --no-tree-shake-icons \
-            --extra-gen-snapshot-options=--no-incremental-compiler \
-            --obfuscate --split-debug-info=build/app/outputs/symbols
+            --obfuscate \
+            --split-debug-info=build/app/outputs/symbols
 
       # 8. Renomear o APK (Opcional, mas recomendado)
       # Renomeia o `app-release.apk` para um nome mais descritivo, incluindo a versão da tag.
