@@ -54,7 +54,7 @@ jobs:
       # 5. Instalar Dependências do Projeto
       # Executa `flutter pub get` para baixar todos os pacotes listados no pubspec.yaml.
       - name: Install dependencies
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
                
       # 6. Descodificar a Keystore e criar o key.properties
       - name: Decode Keystore and Create Properties
