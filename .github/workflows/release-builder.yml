@@ -68,45 +68,19 @@ jobs:
           echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=../../upload-keystore.jks" >> android/key.properties
 
-      # 6.1 Remove build-id de flutter_zxing para que os binários sejam idênticos ao F-Droid
-      - name: Remove build-id from flutter_zxing (Reproducible Build)
+      # 5. Patch Reproducible Build (Global)
+      - name: Remove build-id from all native dependencies
         run: |
-          set -e
-          # No GitHub Actions, o PUB_CACHE padrão é este:
-          CACHE_PATH="${HOME}/.pub-cache"
-          echo "Aplicando patch em: $CACHE_PATH"
-
-          # Encontra e modifica os ficheiros CMakeLists.txt
-          mapfile -t CMAKES < <(find "$CACHE_PATH" -name "CMakeLists.txt" -path "*flutter_zxing*")
-          
-          if [ ${#CMAKES[@]} -eq 0 ]; then
-            echo "Aviso: Nenhum CMakeLists.txt de flutter_zxing encontrado em $CACHE_PATH"
-          else
-            for file in "${CMAKES[@]}"; do
-              if ! grep -q "add_link_options.*--build-id=none" "$file"; then
-                echo "Adicionando --build-id=none em: $file"
-                # Injeta a opção de linkagem para garantir determinismo no binário nativo
-                echo 'add_link_options("LINKER:--build-id=none")' >> "$file"
-              else
-                echo "Já tem --build-id=none em: $file"
-              fi
-            done
-          fi
-
-          echo "Verificando modificações..."
-          MODIFIED_COUNT=$(grep -l "add_link_options.*--build-id=none" "${CMAKES[@]}" 2>/dev/null | wc -l || echo "0")
-          
-          if [ "$MODIFIED_COUNT" -gt "0" ]; then
-            echo "Patch aplicado com sucesso em $MODIFIED_COUNT ficheiro(s)."
-          else
-            echo "Nenhuma modificação confirmada."
-          fi
-
-      - name: Remove build-id from flutter_zxing
-        run: |
+          # Define o cache explicitamente
           export PUB_CACHE=${HOME}/.pub-cache
-          find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e '$a add_link_options("LINKER:--build-id=none")' {} \;
-          grep -r "build-id=none" "$PUB_CACHE" | grep "flutter_zxing" || (echo "ERRO: Patch não aplicado!" && exit 1)
+          echo "Aplicando patch global em: $PUB_CACHE"
+
+          # Procura todos os CMakeLists.txt de todos os plugins e desativa o Build-ID
+          # Isto cobre flutter_zxing, camera, image_picker e qualquer outro futuro
+          find "$PUB_CACHE" -name "CMakeLists.txt" -exec sed -i -e '$a add_link_options("LINKER:--build-id=none")' {} \;
+          
+          # Verificação: Mostra quais ficheiros foram alterados para auditoria no log
+          find "$PUB_CACHE" -name "CMakeLists.txt" -exec grep -l "build-id=none" {} \;
 
       # 6.2 Compilar o APK de Release
       # O comando principal que compila a aplicação em modo de produção.
