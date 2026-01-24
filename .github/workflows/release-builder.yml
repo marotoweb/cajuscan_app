@@ -63,19 +63,12 @@ jobs:
           echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=../../upload-keystore.jks" >> android/key.properties
 
-      # 6.   Patch Reproducible Build (Global)
-      - name: Remove build-id from all native dependencies
+      # 6. Remover build-id para garantir builds determinísticos
+      - name: Remove build-id from flutter_zxing
         run: |
-          # Define o cache explicitamente
           export PUB_CACHE=${HOME}/.pub-cache
-          echo "Aplicando patch global em: $PUB_CACHE"
+          find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e '$a add_link_options("LINKER:--build-id=none")' {} \;
 
-          # Procura todos os CMakeLists.txt de todos os plugins e desativa o Build-ID
-          # Isto cobre flutter_zxing, camera, image_picker e qualquer outro futuro
-          find "$PUB_CACHE" -name "CMakeLists.txt" -exec sed -i -e '$a add_link_options("LINKER:--build-id=none")' {} \;
-          
-          # Verificação: Mostra quais ficheiros foram alterados para auditoria no log
-          find "$PUB_CACHE" -name "CMakeLists.txt" -exec grep -l "build-id=none" {} \;
 
       # 7. Compilar o APK de Release
       # O comando principal que compila a aplicação em modo de produção.
