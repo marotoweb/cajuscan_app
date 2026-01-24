@@ -102,6 +102,12 @@ jobs:
             echo "Nenhuma modificação confirmada."
           fi
 
+      - name: Remove build-id from flutter_zxing
+        run: |
+          export PUB_CACHE=${HOME}/.pub-cache
+          find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e '$a add_link_options("LINKER:--build-id=none")' {} \;
+          grep -r "build-id=none" "$PUB_CACHE" | grep "flutter_zxing" || (echo "ERRO: Patch não aplicado!" && exit 1)
+
       # 6.2 Compilar o APK de Release
       # O comando principal que compila a aplicação em modo de produção.
       - name: Build APK
