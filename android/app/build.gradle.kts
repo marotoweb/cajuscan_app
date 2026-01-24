@@ -34,10 +34,12 @@ android {
 
         externalNativeBuild {
             cmake {
-                // Passa a flag diretamente para o compilador C++
-                cppFlags += "-Wl,--build-id=none"
-                // Garante que o linker também recebe a instrução
-                arguments += "-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--build-id=none"
+                // Estas flags garantem que o compilador C++ substitua o caminho real por "."
+                arguments(
+                    "-DCMAKE_C_FLAGS=-fdebug-prefix-map=${project.rootDir.absolutePath}=.",
+                    "-DCMAKE_CXX_FLAGS=-fdebug-prefix-map=${project.rootDir.absolutePath}=.",
+                    "-Wl,--build-id=none" // Remove o Build ID variável que vimos no seu relatório
+                )
             }
         }
     }
