@@ -31,6 +31,15 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        externalNativeBuild {
+            cmake {
+                // Passa a flag diretamente para o compilador C++
+                cppFlags += "-Wl,--build-id=none"
+                // Garante que o linker também recebe a instrução
+                arguments += "-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--build-id=none"
+            }
+        }
     }
 
     val keystorePropertiesFile = rootProject.file("key.properties")
@@ -71,6 +80,14 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Esta parte é crucial para o Kotlin DSL no Flutter
+            packaging {
+                jniLibs {
+                    // Impede que o processo de build altere os binários (strip)
+                    // o que às vezes reintroduz metadados
+                    doNotStrip("**/*.so")
+                }
+            }
         }
     }
 
