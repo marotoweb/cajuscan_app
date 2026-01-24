@@ -46,12 +46,29 @@ jobs:
           channel: 'stable'
           cache: true
 
-      # 4. Instalar Dependências do Projeto
+      # 4. Limpar o Projeto (Boa Prática)
+      # Executa `flutter clean` para garantir que não há artefactos de builds anteriores.
+      - name: Clean project
+        run: flutter clean
+
+      # 5. Instalar Dependências do Projeto
       # Executa `flutter pub get` para baixar todos os pacotes listados no pubspec.yaml.
       - name: Install dependencies
         run: flutter pub get
-        
-      # 4.1 Remove build-id de flutter_zxing para que os binários sejam idênticos ao F-Droid
+               
+      # 6. Descodificar a Keystore e criar o key.properties
+      - name: Decode Keystore and Create Properties
+        run: |
+          # Descodifica a keystore para a raiz do projeto (onde o Gradle espera)
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > upload-keystore.jks
+          
+          # Cria o ficheiro key.properties dentro da pasta android/
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=../../upload-keystore.jks" >> android/key.properties
+
+      # 6.1 Remove build-id de flutter_zxing para que os binários sejam idênticos ao F-Droid
       - name: Remove build-id from flutter_zxing (Reproducible Build)
         run: |
           set -e
@@ -84,28 +101,14 @@ jobs:
           else
             echo "Nenhuma modificação confirmada."
           fi
-          
-      # 5. Limpar o Projeto (Boa Prática)
-      # Executa `flutter clean` para garantir que não há artefactos de builds anteriores.
-      - name: Clean project
-        run: flutter clean
-
-      # 6.1. Descodificar a Keystore e criar o key.properties
-      - name: Decode Keystore and Create Properties
-        run: |
-          # Descodifica a keystore para a raiz do projeto (onde o Gradle espera)
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > upload-keystore.jks
-          
-          # Cria o ficheiro key.properties dentro da pasta android/
-          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=../../upload-keystore.jks" >> android/key.properties
 
       # 6.2 Compilar o APK de Release
       # O comando principal que compila a aplicação em modo de produção.
       - name: Build APK
-        run: flutter build apk --release --no-tree-shake-icons
+        run: |
+          # Isto garante que todos os ficheiros dentro do APK tenham a mesma data do commit
+          export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
+          flutter build apk --release --no-tree-shake-icons
 
       # 7. Renomear o APK (Opcional, mas recomendado)
       # Renomeia o `app-release.apk` para um nome mais descritivo, incluindo a versão da tag.
