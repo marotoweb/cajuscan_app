@@ -44,19 +44,14 @@ jobs:
         with:
           flutter-version: '3.38.6'
           channel: 'stable'
-          cache: true
+          cache: false
 
-      # 4. Limpar o Projeto (Boa Prática)
-      # Executa `flutter clean` para garantir que não há artefactos de builds anteriores.
-      - name: Clean project
-        run: flutter clean
-
-      # 5. Instalar Dependências do Projeto
+      # 4. Instalar Dependências do Projeto
       # Executa `flutter pub get` para baixar todos os pacotes listados no pubspec.yaml.
       - name: Install dependencies
         run: flutter pub get --enforce-lockfile
                
-      # 6. Descodificar a Keystore e criar o key.properties
+      # 5. Descodificar a Keystore e criar o key.properties
       - name: Decode Keystore and Create Properties
         run: |
           # Descodifica a keystore para a raiz do projeto (onde o Gradle espera)
@@ -68,7 +63,7 @@ jobs:
           echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=../../upload-keystore.jks" >> android/key.properties
 
-      # 5. Patch Reproducible Build (Global)
+      # 6. Patch Reproducible Build (Global)
       - name: Remove build-id from all native dependencies
         run: |
           # Define o cache explicitamente
@@ -82,21 +77,25 @@ jobs:
           # Verificação: Mostra quais ficheiros foram alterados para auditoria no log
           find "$PUB_CACHE" -name "CMakeLists.txt" -exec grep -l "build-id=none" {} \;
 
-      # 6.2 Compilar o APK de Release
+      # 7. Compilar o APK de Release
       # O comando principal que compila a aplicação em modo de produção.
       - name: Build APK
         run: |
           # Isto garante que todos os ficheiros dentro do APK tenham a mesma data do commit
           export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
-          flutter build apk --release --no-tree-shake-icons
+          # Build limpo e determinístico
+          flutter build apk --release \
+            --no-tree-shake-icons \
+            --extra-gen-snapshot-options=--no-incremental-compiler \
+            --obfuscate --split-debug-info=build/app/outputs/symbols
 
-      # 7. Renomear o APK (Opcional, mas recomendado)
+      # 8. Renomear o APK (Opcional, mas recomendado)
       # Renomeia o `app-release.apk` para um nome mais descritivo, incluindo a versão da tag.
       # `${{ github.ref_name }}` é uma variável do GitHub que contém o nome da tag (ex: "v1.0.0").
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk CajuScan-${{ github.ref_name }}.apk
 
-      # 8. Ler notas para a Release
+      # 9. Ler notas para a Release
       # Esta etapa lê o conteúdo do ficheiro RELEASE_NOTES.md para usar como corpo da release.       
       - name: Read release body from file
         run: |
@@ -107,7 +106,7 @@ jobs:
           echo "" >> $GITHUB_ENV
           echo "$DELIMITER" >> $GITHUB_ENV
 
-      # 9. Fazer Upload do APK para a Release
+      # 10. Fazer Upload do APK para a Release
       # Esta ação faz o upload do APK compilado e anexa-o à página da Release no GitHub.
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v2
