@@ -63,14 +63,18 @@ jobs:
           echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=../../upload-keystore.jks" >> android/key.properties
 
-      # 6. Remover build-id para garantir builds determinísticos
-      - name: Remove build-id from flutter_zxing
+      # 6. Patch flutter_zxing para reprodutibilidade
+      - name: Patch flutter_zxing for reproducibility
         run: |
           export PUB_CACHE=${HOME}/.pub-cache
+          # Remove o Build-ID
           find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e '1a add_link_options("LINKER:--build-id=none")' {} \;
-
+          
+          # MAPEIA OS CAMINHOS
+          # Isso faz o compilador trocar o caminho do GitHub (/home/runner/work/...) por algo fixo (/tmp/build)
+          find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e "1a add_compile_options(\"-ffile-prefix-map=$GITHUB_WORKSPACE=/tmp/build\")" {} \;
+      
       # 7. Compilar o APK de Release
-      # O comando principal que compila a aplicação em modo de produção.
       - name: Build APK
         run: |
           # Isto garante que todos os ficheiros dentro do APK tenham a mesma data do commit
