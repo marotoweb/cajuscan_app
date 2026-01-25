@@ -67,8 +67,7 @@ jobs:
       - name: Remove build-id from flutter_zxing
         run: |
           export PUB_CACHE=${HOME}/.pub-cache
-          find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e '$a add_link_options("LINKER:--build-id=none")' {} \;
-
+          find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e '1a add_link_options("LINKER:--build-id=none")' {} \;
 
       # 7. Compilar o APK de Release
       # O comando principal que compila a aplicação em modo de produção.
