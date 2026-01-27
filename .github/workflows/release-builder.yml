@@ -73,14 +73,14 @@ jobs:
           # MAPEIA OS CAMINHOS
           # Isso faz o compilador trocar o caminho do GitHub (/home/runner/work/...) por algo fixo (/tmp/build)
           find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e "1a add_compile_options(\"-ffile-prefix-map=$GITHUB_WORKSPACE=/tmp/build\")" {} \;
-      - name: Clean for Reproducibility
-        run: |
+      # - name: Clean for Reproducibility
+        # run: |
           # Desativa ArtProfiles via Kotlin DSL
-          printf "\ntasks.withType<org.gradle.api.Task>().configureEach {\n    if (name.contains(\"ArtProfile\", ignoreCase = true)) {\n        enabled = false\n    }\n}\n" >> android/app/build.gradle.kts
+          # printf "\ntasks.withType<org.gradle.api.Task>().configureEach {\n    if (name.contains(\"ArtProfile\", ignoreCase = true)) {\n        enabled = false\n    }\n}\n" >> android/app/build.gradle.kts
           
           # Remove ficheiros residuais
-          find . -name "*.prof" -delete
-          find . -name "*.profm" -delete
+          # find . -name "*.prof" -delete
+          # find . -name "*.profm" -delete
           
       # 7. Compilar o APK de Release
       - name: Build APK
