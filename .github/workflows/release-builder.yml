@@ -74,12 +74,15 @@ jobs:
           # Isso faz o compilador trocar o caminho do GitHub (/home/runner/work/...) por algo fixo (/tmp/build)
           find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e "1a add_compile_options(\"-ffile-prefix-map=$GITHUB_WORKSPACE=/tmp/build\")" {} \;
 
-      - name: Clean for Reproducibility
+      - name: Force Reproducibility & Clean Non-Free Code
         run: |
-          # Desativa ArtProfiles via Kotlin DSL
-          printf "\ntasks.withType<org.gradle.api.Task>().configureEach {\n    if (name.contains(\"ArtProfile\", ignoreCase = true)) {\n        enabled = false\n    }\n}\n" >> android/app/build.gradle.kts
+          # 1. Bloqueia ArtProfiles e a pasta dexopt (evita erro de assinatura)
+          # 2. Exclui o Google Play Core (passa no scanner de bibliotecas proprietárias)
+          printf "\nandroid { packaging { resources { excludes += \"assets/dexopt/*\" } } }\n" >> android/app/build.gradle.kts
+          printf "\nconfigurations.all { exclude(group = \"com.google.android.play\", module = \"core\") }\n" >> android/app/build.gradle.kts
+          printf "\ntasks.withType<org.gradle.api.Task>().configureEach { if (name.contains(\"ArtProfile\", ignoreCase = true)) { enabled = false } }\n" >> android/app/build.gradle.kts
           
-          # Remove ficheiros residuais
+          # Limpeza de ficheiros temporários de perfil
           find . -name "*.prof" -delete
           find . -name "*.profm" -delete
           rm -rf android/app/src/main/assets/dexopt
