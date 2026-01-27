@@ -82,6 +82,7 @@ jobs:
           # Remove ficheiros residuais
           find . -name "*.prof" -delete
           find . -name "*.profm" -delete
+          rm -rf android/app/src/main/assets/dexopt
           
       # 7. Compilar o APK de Release
       - name: Build APK
