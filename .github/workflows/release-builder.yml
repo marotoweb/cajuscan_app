@@ -76,13 +76,15 @@ jobs:
 
       - name: Force Reproducibility & Clean Non-Free Code
         run: |
-          # 1. Bloqueia ArtProfiles e a pasta dexopt (evita erro de assinatura)
-          # 2. Exclui o Google Play Core (passa no scanner de bibliotecas proprietárias)
+          # 1. Bloqueia todos os módulos do Google Play Core (Core, Review, Update)
+          # Isso garante que o APK gerado no GitHub seja "limpo" para o scanner do F-Droid
+          printf "\nconfigurations.all {\n    exclude(group = \"com.google.android.play\", module = \"core\")\n    exclude(group = \"com.google.android.play\", module = \"review\")\n    exclude(group = \"com.google.android.play\", module = \"app-update\")\n}\n" >> android/app/build.gradle.kts
+          
+          # 2. Bloqueia ArtProfiles e a pasta dexopt (essencial para o servidor Trixie do F-Droid)
           printf "\nandroid { packaging { resources { excludes += \"assets/dexopt/*\" } } }\n" >> android/app/build.gradle.kts
-          printf "\nconfigurations.all { exclude(group = \"com.google.android.play\", module = \"core\") }\n" >> android/app/build.gradle.kts
           printf "\ntasks.withType<org.gradle.api.Task>().configureEach { if (name.contains(\"ArtProfile\", ignoreCase = true)) { enabled = false } }\n" >> android/app/build.gradle.kts
           
-          # Limpeza de ficheiros temporários de perfil
+          # 3. Limpeza física de ficheiros residuais que causam diferenças binárias
           find . -name "*.prof" -delete
           find . -name "*.profm" -delete
           rm -rf android/app/src/main/assets/dexopt
