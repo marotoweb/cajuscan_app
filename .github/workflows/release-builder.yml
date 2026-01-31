@@ -84,8 +84,8 @@ jobs:
           find "$PUB_CACHE" -name "*.jar" -exec zip -dq {} "**/com/google/android/play/core/*" \; || true
           
           # 5. Injeção via printf adicional para garantir exclusão completa
-          printf "\nconfigurations.all { exclude(group = \"com.google.android.play\") }\n" >> android/app/build.gradle.kts
-
+          printf "\nconfigurations.all { resolutionStrategy.eachDependency { if (requested.group == \"com.google.android.play\") { useTarget(\"dev.flutter:empty:1.0\") } } }\n" >> android/app/build.gradle.kts
+          
           # 6. Limpeza de ficheiros de perfil residuais
           find . -name "*.prof" -delete
           find . -name "*.profm" -delete
