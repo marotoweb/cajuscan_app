@@ -88,6 +88,9 @@ jobs:
           find . -name "*.prof" -delete
           find . -name "*.profm" -delete
           rm -rf android/app/src/main/assets/dexopt
+
+          # Entra na cache do pub e remove fisicamente as classes da Google Play Core
+          find $PUB_CACHE -name "*.aar" -exec zip -d {} "classes.jar" "com/google/android/play/core/*" \; || true
           
       # 7. Compilar o APK de Release
       - name: Build APK
