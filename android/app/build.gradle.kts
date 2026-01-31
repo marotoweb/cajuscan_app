@@ -62,8 +62,8 @@ android {
             }
             
             // Desativa a ofuscação e a remoção de código não usado
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             
             // Mantém as definições padrão de ficheiros de regras, 
             // mas como o minify está false, elas não farão nada.

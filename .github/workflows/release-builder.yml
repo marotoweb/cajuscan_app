@@ -63,7 +63,8 @@ jobs:
           echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=../../upload-keystore.jks" >> android/key.properties
 
-      - name: 6 Patch and Clean for F-Droid Match
+      # 6. Patch e Limpeza para Compatibilidade com F-Droid
+      - name: Patch and Clean for F-Droid Match
         run: |
           PUB_CACHE="${HOME}/.pub-cache"
           echo "PUB_CACHE=$PUB_CACHE" >> $GITHUB_ENV
