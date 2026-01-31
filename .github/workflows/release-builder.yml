@@ -69,30 +69,26 @@ jobs:
           PUB_CACHE="${HOME}/.pub-cache"
           echo "PUB_CACHE=$PUB_CACHE" >> $GITHUB_ENV
           
-          # Patch C++
+          # 1. Patch C++ (Reprodutibilidade)
           find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e '1a add_link_options("LINKER:--build-id=none")' {} \;
           find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e "1a add_compile_options(\"-ffile-prefix-map=$GITHUB_WORKSPACE=/tmp/build\")" {} \;
 
-          # Limpeza física profunda (AAR/JAR)
-          find "$PUB_CACHE" -name "*.aar" -exec zip -dq {} "**/com/google/android/play/core/*" \; || true
-          find "$PUB_CACHE" -name "*.jar" -exec zip -dq {} "**/com/google/android/play/core/*" \; || true
+          # 2. Limpeza Física Profunda (Remove o código antes de compilar)
+          # Atacamos ficheiros binários e código-fonte que possam conter o Play Core
+          find "$PUB_CACHE" -type f \( -name "*.aar" -o -name "*.jar" -o -name "*.java" -o -name "*.kt" \) | xargs grep -l "SplitInstallManager" | xargs rm -f || true
 
-          # Injeção Gradle Consolidada
+          # 3. Injeção Gradle (Bloqueio em nível de dependência)
+          # Substitui qualquer tentativa de baixar Play Core por um alvo vazio
           printf "\nconfigurations.all { resolutionStrategy.eachDependency { if (requested.group == \"com.google.android.play\") { useTarget(\"dev.flutter:empty:1.0\") } } }\n" >> android/app/build.gradle.kts
+          
+          # 4. Limpeza de rasto e conformidade (Dexopt e ArtProfiles)
           printf "\nandroid { packaging { resources { excludes += \"assets/dexopt/*\" } } }\n" >> android/app/build.gradle.kts
           printf "\ntasks.withType<org.gradle.api.Task>().configureEach { if (name.contains(\"ArtProfile\", ignoreCase = true)) { enabled = false } }\n" >> android/app/build.gradle.kts
           
-          # Mostrar o ficheiro build.gradle.kts modificado para verificação
-          cat android/app/build.gradle.kts
-          # Verificar se ainda existem referências ao SplitInstallManager
-          grep -r "SplitInstallManager" .
-
-          # Limpeza de rasto e cache local
+          # 5. Reset Total (Garante que nenhum lixo de cache entre no APK)
+          rm -rf android/app/build android/.gradle
           find . -name "*.prof" -delete
           find . -name "*.profm" -delete
-          rm -rf android/app/src/main/assets/dexopt
-          rm -rf android/app/build
-          rm -rf android/.gradle
           flutter clean
 
       # 7. Compilar o APK de Release
