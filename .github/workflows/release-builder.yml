@@ -63,35 +63,29 @@ jobs:
           echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=../../upload-keystore.jks" >> android/key.properties
 
-      # 6. Patch flutter_zxing para reprodutibilidade
-      - name: Patch flutter_zxing for reproducibility
+      - name: 6 Patch and Clean for F-Droid Match
         run: |
-          export PUB_CACHE=${HOME}/.pub-cache
-          # Remove o Build-ID
-          find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e '1a add_link_options("LINKER:--build-id=none")' {} \;
+          # 1. Define o PUB_CACHE globalmente para os passos seguintes
+          PUB_CACHE="${HOME}/.pub-cache"
+          echo "PUB_CACHE=$PUB_CACHE" >> $GITHUB_ENV
           
-          # MAPEIA OS CAMINHOS
-          # Isso faz o compilador trocar o caminho do GitHub (/home/runner/work/...) por algo fixo (/tmp/build)
+          # 2. Patch C++ (flutter_zxing)
+          find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e '1a add_link_options("LINKER:--build-id=none")' {} \;
           find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e "1a add_compile_options(\"-ffile-prefix-map=$GITHUB_WORKSPACE=/tmp/build\")" {} \;
 
-      - name: Force Reproducibility & Clean Non-Free Code
-        run: |
-          # 1. Bloqueia todos os módulos do Google Play Core (Core, Review, Update)
-          # Isso garante que o APK gerado no GitHub seja "limpo" para o scanner do F-Droid
+          # 3. Injeção Gradle (Excluir Play Core e Dexopt)
           printf "\nconfigurations.all {\n    exclude(group = \"com.google.android.play\", module = \"core\")\n    exclude(group = \"com.google.android.play\", module = \"review\")\n    exclude(group = \"com.google.android.play\", module = \"app-update\")\n}\n" >> android/app/build.gradle.kts
-          
-          # 2. Bloqueia ArtProfiles e a pasta dexopt (essencial para o servidor Trixie do F-Droid)
           printf "\nandroid { packaging { resources { excludes += \"assets/dexopt/*\" } } }\n" >> android/app/build.gradle.kts
           printf "\ntasks.withType<org.gradle.api.Task>().configureEach { if (name.contains(\"ArtProfile\", ignoreCase = true)) { enabled = false } }\n" >> android/app/build.gradle.kts
+
+          # 4. Remoção física definitiva das classes non-free (Passar no Scanner)
+          find "$PUB_CACHE" -name "*.aar" -exec zip -d {} "com/google/android/play/core/*" \; || true
           
-          # 3. Limpeza física de ficheiros residuais que causam diferenças binárias
+          # 5. Limpeza de ficheiros de perfil residuais
           find . -name "*.prof" -delete
           find . -name "*.profm" -delete
           rm -rf android/app/src/main/assets/dexopt
 
-          # Entra na cache do pub e remove fisicamente as classes da Google Play Core
-          find $PUB_CACHE -name "*.aar" -exec zip -d {} "classes.jar" "com/google/android/play/core/*" \; || true
-          
       # 7. Compilar o APK de Release
       - name: Build APK
         run: |
