@@ -83,6 +83,8 @@ jobs:
           
           # Mostrar o ficheiro build.gradle.kts modificado para verificação
           cat android/app/build.gradle.kts
+          # Verificar se ainda existem referências ao SplitInstallManager
+          grep -r "SplitInstallManager" .
 
           # Limpeza de rasto e cache local
           find . -name "*.prof" -delete
