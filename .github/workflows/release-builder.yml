@@ -29,10 +29,10 @@ jobs:
       # 2. Configurar o Java (JDK)
       # O Flutter para Android depende do Java Development Kit.
       # A versão 17 é uma escolha segura e moderna para builds Android atuais.
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
 
       # 3. Configurar o Flutter SDK
@@ -42,21 +42,16 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.38.6' # Substitua pela sua versão do Flutter, se for diferente.
+          flutter-version: '3.38.6'
           channel: 'stable'
-          cache: true # Ativa o cache para acelerar builds futuros.
+          cache: false
 
       # 4. Instalar Dependências do Projeto
       # Executa `flutter pub get` para baixar todos os pacotes listados no pubspec.yaml.
       - name: Install dependencies
-        run: flutter pub get
-
-      # 5. Limpar o Projeto (Boa Prática)
-      # Executa `flutter clean` para garantir que não há artefactos de builds anteriores.
-      - name: Clean project
-        run: flutter clean
-
-      # 6.1. Descodificar a Keystore e criar o key.properties
+        run: flutter pub get --enforce-lockfile
+               
+      # 5. Descodificar a Keystore e criar o key.properties
       - name: Decode Keystore and Create Properties
         run: |
           # Descodifica a keystore para a raiz do projeto (onde o Gradle espera)
@@ -68,18 +63,49 @@ jobs:
           echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=../../upload-keystore.jks" >> android/key.properties
 
-      # 6.2 Compilar o APK de Release
-      # O comando principal que compila a aplicação em modo de produção.
-      - name: Build APK
-        run: flutter build apk --release
+      # 6. Patch e Limpeza para Compatibilidade com F-Droid
+      - name: Patch and Clean for F-Droid Match
+        run: |
+          PUB_CACHE="${HOME}/.pub-cache"
+          echo "PUB_CACHE=$PUB_CACHE" >> $GITHUB_ENV
+          
+          # 1. Patch C++ (Reprodutibilidade)
+          find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e '1a add_link_options("LINKER:--build-id=none")' {} \;
+          find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e "1a add_compile_options(\"-ffile-prefix-map=$GITHUB_WORKSPACE=/tmp/build\")" {} \;
 
-      # 7. Renomear o APK (Opcional, mas recomendado)
+          # 2. Limpeza Física Profunda (Remove o código antes de compilar)
+          # Atacamos ficheiros binários e código-fonte que possam conter o Play Core
+          find "$PUB_CACHE" -type f \( -name "*.aar" -o -name "*.jar" -o -name "*.java" -o -name "*.kt" \) | xargs grep -l "SplitInstallManager" | xargs rm -f || true
+
+          # 3. Injeção Gradle (Bloqueio em nível de dependência)
+          # Substitui qualquer tentativa de baixar Play Core por um alvo vazio
+          printf "\nconfigurations.all { resolutionStrategy.eachDependency { if (requested.group == \"com.google.android.play\") { useTarget(\"dev.flutter:empty:1.0\") } } }\n" >> android/app/build.gradle.kts
+          
+          # 4. Limpeza de rasto e conformidade (Dexopt e ArtProfiles)
+          printf "\nandroid { packaging { resources { excludes += \"assets/dexopt/*\" } } }\n" >> android/app/build.gradle.kts
+          printf "\ntasks.withType<org.gradle.api.Task>().configureEach { if (name.contains(\"ArtProfile\", ignoreCase = true)) { enabled = false } }\n" >> android/app/build.gradle.kts
+          
+          # 5. Reset Total (Garante que nenhum lixo de cache entre no APK)
+          rm -rf android/app/build android/.gradle
+          find . -name "*.prof" -delete
+          find . -name "*.profm" -delete
+          flutter clean
+
+      # 7. Compilar o APK de Release
+      - name: Build APK
+        run: |
+          # Isto garante que todos os ficheiros dentro do APK tenham a mesma data do commit
+          export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
+          # Build limpo e determinístico
+          flutter build apk --release --no-tree-shake-icons
+
+      # 8. Renomear o APK (Opcional, mas recomendado)
       # Renomeia o `app-release.apk` para um nome mais descritivo, incluindo a versão da tag.
       # `${{ github.ref_name }}` é uma variável do GitHub que contém o nome da tag (ex: "v1.0.0").
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk CajuScan-${{ github.ref_name }}.apk
 
-      # 8. Ler notas para a Release
+      # 9. Ler notas para a Release
       # Esta etapa lê o conteúdo do ficheiro RELEASE_NOTES.md para usar como corpo da release.       
       - name: Read release body from file
         run: |
@@ -90,7 +116,7 @@ jobs:
           echo "" >> $GITHUB_ENV
           echo "$DELIMITER" >> $GITHUB_ENV
 
-      # 9. Fazer Upload do APK para a Release
+      # 10. Fazer Upload do APK para a Release
       # Esta ação faz o upload do APK compilado e anexa-o à página da Release no GitHub.
       - name: Upload APK to Release
         uses: softprops/action-gh-release@v2

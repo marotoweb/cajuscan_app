@@ -1,7 +1,0 @@
-Novidades da Versão 1.0.3
-
-- Transição para motor de leitura 100% open-source (ZXing).
-- Remoção de dependências proprietárias da Google (ML Kit).
-- Melhorias na interface do scanner com sobreposições personalizadas.
-- Preparação oficial para builds reprodutíveis no F-Droid.
-- APK assinado oficialmente pelo programador.

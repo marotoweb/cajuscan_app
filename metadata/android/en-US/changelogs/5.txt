@@ -1,0 +1,8 @@
+New in Version 1.0.4
+
+- Switched to a 100% open-source scanning engine (ZXing).
+- Fully removed proprietary Google dependencies (ML Kit & Play Core).
+- Enhanced FOSS compliance with R8 code optimization and stripping.
+- Improved scanner interface with optimized ReaderWidget and custom overlays.
+- Official support for Reproducible Builds.
+- APK officially signed by the developer.

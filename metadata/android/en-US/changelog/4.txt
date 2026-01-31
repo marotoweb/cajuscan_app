@@ -1,7 +1,0 @@
-New in Version 1.0.3
-
-- Switched to a 100% open-source scanning engine (ZXing).
-- Removed all proprietary Google dependencies (ML Kit).
-- Improved scanner interface with optimized ReaderWidget and custom overlays.
-- Official support for Reproducible Builds.
-- APK now officially signed by the developer.

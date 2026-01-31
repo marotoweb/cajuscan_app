@@ -1,16 +1,17 @@
-# 🚀 Novidades da Versão 1.0.3
+# 🚀 Novidades da Versão 1.0.4
 
-Esta versão marca um passo fundamental para a autonomia e transparência do projeto, garantindo total conformidade com os princípios de Software Livre (FOSS) e preparação para o F-Droid.
+Esta versão consolida a transição para uma arquitetura 100% Software Livre, corrigindo resíduos técnicos de bibliotecas proprietárias detetados em versões anteriores.
 
-### 🛡️ Transição para Software Livre
-- **Remoção do Google ML Kit**: Eliminada a dependência `mobile_scanner` que utilizava componentes proprietários da Google.
-- **Implementação do Flutter ZXing**: Adicionado o `flutter_zxing (^2.2.1)`, uma solução totalmente open-source para leitura de códigos de barras e QR.
+### 🛡️ Transição Concluída para Software Livre
+- **Substituição do Google ML Kit**: Migração total do `mobile_scanner` (proprietário) para o **`flutter_zxing`**, uma solução puramente open-source para leitura de códigos de barras e QR.
+- **Expurgo de Código Proprietário**: Limpeza profunda do binário para remover rastos do *Play Core SDK* que persistiam em cache, garantindo conformidade total com os padrões FOSS.
 
-### ✨ Melhorias Técnicas
-- **Nova Interface de Scanner**: Integração do `ReaderWidget` com callback `onScan` otimizado.
-- **UI Preservada**: Manutenção da identidade visual através de `CustomPainters` personalizados para o overlay do scanner.
+### ✨ Melhorias Técnicas e de Performance
+- **Nova Interface de Scanner**: Integração otimizada do `ReaderWidget` com suporte a `CustomPainters` para manter a identidade visual e o overlay personalizado do CajuScan.
+- **Otimização R8/Minify**: Ativação do motor de limpeza de código para garantir que apenas funções essenciais e livres sejam incluídas no APK final, resultando num binário mais leve e seguro.
 
-### 📦 F-Droid & Reproducible Builds
-- **Assinatura Oficial**: APK assinado digitalmente pelo autor (Roberto Cc).
-- **Build Reprodutível**: Configuração de build ajustada para permitir a verificação binária independente (RB).
-- **Sem Ofuscação**: R8/ProGuard configurados para garantir que o binário corresponde exatamente ao código-fonte.
+### 📦 F-Droid & Privacidade
+- **Conformidade FOSS Rigorosa**: Ajustes no motor de build (Gradle) para bloquear ativamente qualquer tentativa de injeção de dependências não-livres.
+- **Privacidade Reforçada**: Garantia de que nenhum componente de telemetria ou serviços Google Play está presente no código.
+- **Assinatura Oficial**: Binário assinado digitalmente pelo autor (**Roberto Cc**).
+- **Build Determinístico**: Melhorias no pipeline de CI para reforçar a reprodutibilidade do binário.

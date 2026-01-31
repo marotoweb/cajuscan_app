@@ -1,0 +1,8 @@
+Novidades na Versão 1.0.4
+
+- Transição para motor de leitura 100% open-source (ZXing).
+- Remoção total de dependências proprietárias da Google (ML Kit e Play Core).
+- Conformidade FOSS reforçada com otimização e limpeza de código via R8.
+- Interface de leitura melhorada com ReaderWidget e camadas personalizadas.
+- Suporte oficial para Builds Reprodutíveis.
+- APK assinado oficialmente pelo programador.
