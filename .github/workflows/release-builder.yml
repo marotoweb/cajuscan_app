@@ -65,31 +65,29 @@ jobs:
 
       - name: 6 Patch and Clean for F-Droid Match
         run: |
-          # 1. Define o PUB_CACHE globalmente para os passos seguintes
           PUB_CACHE="${HOME}/.pub-cache"
           echo "PUB_CACHE=$PUB_CACHE" >> $GITHUB_ENV
           
-          # 2. Patch C++ (flutter_zxing)
+          # Patch C++
           find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e '1a add_link_options("LINKER:--build-id=none")' {} \;
           find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e "1a add_compile_options(\"-ffile-prefix-map=$GITHUB_WORKSPACE=/tmp/build\")" {} \;
 
-          # 3. Injeção Gradle (Excluir Play Core e Dexopt)
-          printf "\nconfigurations.all {\n    exclude(group = \"com.google.android.play\", module = \"core\")\n    exclude(group = \"com.google.android.play\", module = \"review\")\n    exclude(group = \"com.google.android.play\", module = \"app-update\")\n}\n" >> android/app/build.gradle.kts
+          # Limpeza física profunda (AAR/JAR)
+          find "$PUB_CACHE" -name "*.aar" -exec zip -dq {} "**/com/google/android/play/core/*" \; || true
+          find "$PUB_CACHE" -name "*.jar" -exec zip -dq {} "**/com/google/android/play/core/*" \; || true
+
+          # Injeção Gradle Consolidada
+          printf "\nconfigurations.all { resolutionStrategy.eachDependency { if (requested.group == \"com.google.android.play\") { useTarget(\"dev.flutter:empty:1.0\") } } }\n" >> android/app/build.gradle.kts
           printf "\nandroid { packaging { resources { excludes += \"assets/dexopt/*\" } } }\n" >> android/app/build.gradle.kts
           printf "\ntasks.withType<org.gradle.api.Task>().configureEach { if (name.contains(\"ArtProfile\", ignoreCase = true)) { enabled = false } }\n" >> android/app/build.gradle.kts
 
-          # 4. Limpeza profunda: Removemos a pasta de classes da Google de dentro de QUALQUER .aar ou .jar
-          # Usamos o wildcard ** para garantir que apanha subpastas dentro do ZIP
-          find "$PUB_CACHE" -name "*.aar" -exec zip -dq {} "**/com/google/android/play/core/*" \; || true
-          find "$PUB_CACHE" -name "*.jar" -exec zip -dq {} "**/com/google/android/play/core/*" \; || true
-          
-          # 5. Injeção via printf adicional para garantir exclusão completa
-          printf "\nconfigurations.all { resolutionStrategy.eachDependency { if (requested.group == \"com.google.android.play\") { useTarget(\"dev.flutter:empty:1.0\") } } }\n" >> android/app/build.gradle.kts
-          
-          # 6. Limpeza de ficheiros de perfil residuais
+          # Limpeza de rasto e cache local
           find . -name "*.prof" -delete
           find . -name "*.profm" -delete
           rm -rf android/app/src/main/assets/dexopt
+          rm -rf android/app/build
+          rm -rf android/.gradle
+          flutter clean
 
       # 7. Compilar o APK de Release
       - name: Build APK
