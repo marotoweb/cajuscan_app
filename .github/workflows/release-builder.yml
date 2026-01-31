@@ -78,10 +78,15 @@ jobs:
           printf "\nandroid { packaging { resources { excludes += \"assets/dexopt/*\" } } }\n" >> android/app/build.gradle.kts
           printf "\ntasks.withType<org.gradle.api.Task>().configureEach { if (name.contains(\"ArtProfile\", ignoreCase = true)) { enabled = false } }\n" >> android/app/build.gradle.kts
 
-          # 4. Remoção física definitiva das classes non-free (Passar no Scanner)
-          find "$PUB_CACHE" -name "*.aar" -exec zip -d {} "com/google/android/play/core/*" \; || true
+          # 4. Limpeza profunda: Removemos a pasta de classes da Google de dentro de QUALQUER .aar ou .jar
+          # Usamos o wildcard ** para garantir que apanha subpastas dentro do ZIP
+          find "$PUB_CACHE" -name "*.aar" -exec zip -dq {} "com/google/android/play/core/*" "**/com/google/android/play/core/*" \; || true
+          find "$PUB_CACHE" -name "*.jar" -exec zip -dq {} "com/google/android/play/core/*" "**/com/google/android/play/core/*" \; || true
           
-          # 5. Limpeza de ficheiros de perfil residuais
+          # 5. Injeção via printf adicional para garantir exclusão completa
+          printf "\nconfigurations.all { exclude(group = \"com.google.android.play\") }\n" >> android/app/build.gradle.kts
+
+          # 6. Limpeza de ficheiros de perfil residuais
           find . -name "*.prof" -delete
           find . -name "*.profm" -delete
           rm -rf android/app/src/main/assets/dexopt
