@@ -80,6 +80,9 @@ jobs:
           printf "\nconfigurations.all { resolutionStrategy.eachDependency { if (requested.group == \"com.google.android.play\") { useTarget(\"dev.flutter:empty:1.0\") } } }\n" >> android/app/build.gradle.kts
           printf "\nandroid { packaging { resources { excludes += \"assets/dexopt/*\" } } }\n" >> android/app/build.gradle.kts
           printf "\ntasks.withType<org.gradle.api.Task>().configureEach { if (name.contains(\"ArtProfile\", ignoreCase = true)) { enabled = false } }\n" >> android/app/build.gradle.kts
+          
+          # Mostrar o ficheiro build.gradle.kts modificado para verificação
+          cat android/app/build.gradle.kts
 
           # Limpeza de rasto e cache local
           find . -name "*.prof" -delete
