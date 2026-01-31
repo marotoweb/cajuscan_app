@@ -61,12 +61,14 @@ android {
                 signingConfigs.getByName("debug")
             }
             
-            // Desativa a ofuscação e a remoção de código não usado
-            isMinifyEnabled = true
+            // Otimização e Compliance FOSS:
+            // enables R8/Proguard para remover código e recursos não utilizados (como o Play Core),
+            // reduzindo o tamanho do APK e garantindo que bibliotecas bloqueadas sejam expurgadas.
+            isMinifyEnabled = true 
             isShrinkResources = true
             
-            // Mantém as definições padrão de ficheiros de regras, 
-            // mas como o minify está false, elas não farão nada.
+            // Regras de Proguard:
+            // Define as regras de otimização padrão da Google e regras personalizadas do projeto.
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
