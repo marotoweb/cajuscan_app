@@ -14,12 +14,12 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = JavaVersion.VERSION_21.toString()
     }
 
     defaultConfig {
@@ -61,12 +61,14 @@ android {
                 signingConfigs.getByName("debug")
             }
             
-            // Desativa a ofuscação e a remoção de código não usado
-            isMinifyEnabled = false
-            isShrinkResources = false
+            // Otimização e conformidade FOSS:
+            // activa R8/Proguard para remover código e recursos não utilizados (como o Play Core),
+            // reduzindo o tamanho do APK e garantindo que bibliotecas bloqueadas sejam expurgadas.
+            isMinifyEnabled = true 
+            isShrinkResources = true
             
-            // Mantém as definições padrão de ficheiros de regras, 
-            // mas como o minify está false, elas não farão nada.
+            // Regras de Proguard:
+            // Define as regras de otimização padrão da Google e regras personalizadas do projeto.
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
