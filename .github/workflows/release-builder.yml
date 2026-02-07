@@ -75,21 +75,21 @@ jobs:
 
           # 2. Limpeza Física Profunda (Remove o código antes de compilar)
           # Atacamos ficheiros binários e código-fonte que possam conter o Play Core
-          find "$PUB_CACHE" -type f \( -name "*.aar" -o -name "*.jar" -o -name "*.java" -o -name "*.kt" \) | xargs grep -l "SplitInstallManager" | xargs rm -f || true
+          # find "$PUB_CACHE" -type f \( -name "*.aar" -o -name "*.jar" -o -name "*.java" -o -name "*.kt" \) | xargs grep -l "SplitInstallManager" | xargs rm -f || true
 
           # 3. Injeção Gradle (Bloqueio em nível de dependência)
           # Substitui qualquer tentativa de baixar Play Core por um alvo vazio
-          printf "\nconfigurations.all { resolutionStrategy.eachDependency { if (requested.group == \"com.google.android.play\") { useTarget(\"dev.flutter:empty:1.0\") } } }\n" >> android/app/build.gradle.kts
+          # printf "\nconfigurations.all { resolutionStrategy.eachDependency { if (requested.group == \"com.google.android.play\") { useTarget(\"dev.flutter:empty:1.0\") } } }\n" >> android/app/build.gradle.kts
           
           # 4. Limpeza de rasto e conformidade (Dexopt e ArtProfiles)
-          printf "\nandroid { packaging { resources { excludes += \"assets/dexopt/*\" } } }\n" >> android/app/build.gradle.kts
-          printf "\ntasks.withType<org.gradle.api.Task>().configureEach { if (name.contains(\"ArtProfile\", ignoreCase = true)) { enabled = false } }\n" >> android/app/build.gradle.kts
+          # printf "\nandroid { packaging { resources { excludes += \"assets/dexopt/*\" } } }\n" >> android/app/build.gradle.kts
+          # printf "\ntasks.withType<org.gradle.api.Task>().configureEach { if (name.contains(\"ArtProfile\", ignoreCase = true)) { enabled = false } }\n" >> android/app/build.gradle.kts
           
           # 5. Reset Total (Garante que nenhum lixo de cache entre no APK)
-          rm -rf android/app/build android/.gradle
-          find . -name "*.prof" -delete
-          find . -name "*.profm" -delete
-          flutter clean
+          # rm -rf android/app/build android/.gradle
+          # find . -name "*.prof" -delete
+          # find . -name "*.profm" -delete
+          # flutter clean
 
       # 7. Compilar o APK de Release
       - name: Build APK
