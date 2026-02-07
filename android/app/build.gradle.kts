@@ -33,6 +33,15 @@ android {
         versionName = flutter.versionName
     }
 
+    // Reproduciblity
+    // Remove ficheiros que variam entre builds e quebram o hash SHA-256
+    packaging {
+        resources {
+            excludes += "assets/dexopt/*"
+            excludes += "META-INF/*.kotlin_module"
+        }
+    }
+
     val keystorePropertiesFile = rootProject.file("key.properties")
     val keystoreProperties = Properties()
     val hasKeyProperties = keystorePropertiesFile.exists()
@@ -79,6 +88,27 @@ android {
     dependenciesInfo {
         includeInApk = false
         includeInBundle = false
+    }
+}
+
+// Foss compliance
+// Bloqueia dependências proprietárias transitivas da Google
+configurations.all {
+    resolutionStrategy {
+        force("dev.flutter:empty:1.0")
+        eachDependency {
+            if (requested.group == "com.google.android.play") {
+                useTarget("dev.flutter:empty:1.0")
+            }
+        }
+    }
+}
+
+// Deterministic Build
+// Desativa tarefas que geram perfis binários inconsistentes (corrige classes.dex)
+tasks.withType<org.gradle.api.Task>().configureEach {
+    if (name.contains("ArtProfile", ignoreCase = true)) {
+        enabled = false
     }
 }
 
