@@ -1,6 +1,10 @@
 [![GitHub Latest Release][releases_shield]][latest_release]
 [![GitHub All Releases][downloads_total_shield]][releases]
 
+[<img src="https://f-droid.org/badge/get-it-on.png"
+    alt="Get it on F-Droid"
+    height="80">](https://f-droid.org/pt/packages/com.marotoweb.cajuscan_app)
+
 [latest_release]: https://github.com/marotoweb/cajuscan/releases/latest
 
 [releases_shield]: https://img.shields.io/github/release/marotoweb/cajuscan.svg?style=popout
