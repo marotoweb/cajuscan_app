@@ -1,0 +1,2 @@
+What's New in Version 1.0.5
+Fixed URL encoding for Cashew 6.4.4+
