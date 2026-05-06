@@ -21,28 +21,25 @@ class CashewLauncher {
         : 'addTransaction';
 
     // Constrói o mapa de parâmetros da query, garantindo que o valor é negativo.
-    // Os valores aqui estão no seu formato original (ex: "Alimentação").
     final transactionTitle = title ?? 'Despesa ${fatura.nifComerciante}';
 
     final Map<String, String> queryParameters = {
       'amount': (-fatura.valorTotal).toString(),
       'date': fatura.data.toIso8601String().split('T').first,
-      'title': Uri.encodeComponent(transactionTitle),
-      'notes': Uri.encodeComponent(
-        'Fatura importada via QR Code\nNIF: ${fatura.nifComerciante}',
-      ),
+      'title': transactionTitle,
+      'notes': 'Fatura importada via QR Code\nNIF: ${fatura.nifComerciante}',
     };
 
     // Adiciona os parâmetros apenas se não estiverem vazios
     if (category.isNotEmpty) {
-      queryParameters['category'] = Uri.encodeComponent(category);
+      queryParameters['category'] = category;
     }
     if (subcategory != null && subcategory.isNotEmpty) {
-      queryParameters['subcategory'] = Uri.encodeComponent(subcategory);
+      queryParameters['subcategory'] = subcategory;
     }
 
     // Constrói o URI final usando o construtor Uri.
-    // Este construtor trata AUTOMATICAMENTE da codificação de caracteres especiais (como 'ã', 'ç', espaços, etc.)
+    // Este construtor trata AUTOMATICAMENTE da codificação de caracteres especiais
     // nos valores do mapa 'queryParameters'.
     final uri = Uri(
       scheme: 'https',
@@ -62,3 +59,4 @@ class CashewLauncher {
     }
   }
 }
+
