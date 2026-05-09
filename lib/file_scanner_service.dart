@@ -1,6 +1,6 @@
 // lib/file_scanner_service.dart
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:pdfx/pdfx.dart';
@@ -22,6 +22,10 @@ class FileScannerService {
 
     // Feedback visual
     if (context.mounted) _showLoading(context);
+
+    // Pequeno delay para garantir que o CircularProgressIndicator aparece
+    await Future.delayed(const Duration(milliseconds: 150));
+
     final filePath = result.files.single.path!;
     final extension = result.files.single.extension?.toLowerCase();
 
@@ -47,56 +51,14 @@ class FileScannerService {
     }
   }
 
-  /// Lê QR code de uma imagem (JPG/PNG) com resolução dinâmica
+  /// Lê QR code de uma imagem com resolução dinâmica usando Isolate
   Future<String?> _scanImage(String path) async {
     final Uint8List fileBytes = await File(path).readAsBytes();
 
-    // Decodificar a imagem original
-    img.Image? originalImage = img.decodeImage(fileBytes);
-    if (originalImage == null) return null;
-
-    // Normaliza a orientação (Exif)
-    final imageBase = img.bakeOrientation(originalImage);
-
-    // Resoluções dinâmicas para fotos
-    final targetWidths = [800, 1200, 1600];
-
-    for (var width in targetWidths) {
-      debugPrint('==> A tentar scan de imagem com largura: ${width}px');
-
-      img.Image resized;
-      if (imageBase.width > width) {
-        resized = img.copyResize(imageBase, width: width);
-      } else {
-        resized = imageBase;
-      }
-
-      // Extração de luminância (Grayscale 1-canal) para o ZXing
-      final luminanceImage = resized.convert(numChannels: 1);
-      final luminanceBytes = luminanceImage.toUint8List();
-
-      final result = zx.readBarcode(
-        luminanceBytes,
-        DecodeParams(
-          format: Format.qrCode,
-          width: luminanceImage.width,
-          height: luminanceImage.height,
-        ),
-      );
-
-      if (result.isValid && result.text != null) {
-        debugPrint('==> QR Code encontrado na imagem com ${width}px');
-        return result.text;
-      }
-
-      // Se a imagem original já era menor que a próxima largura, não vale a pena tentar aumentar
-      if (imageBase.width <= width) break;
-    }
-
-    return null;
+    return await compute(_processImageDynamicIsolate, fileBytes);
   }
 
-  /// Lê QR code de um PDF com escalas dinâmicas
+  /// Lê QR code de um PDF com escalas dinâmicas usando Isolate para o processamento de imagem
   Future<String?> _scanPdf(String path) async {
     final document = await PdfDocument.openFile(path);
 
@@ -125,31 +87,17 @@ class FileScannerService {
         );
 
         if (pageImage != null) {
-          img.Image? image = img.decodeImage(pageImage.bytes);
-          if (image != null) {
-            debugPrint('==> A tentar descodificar QR Code do PDF...');
+          // Processamos cada renderização pesada num Isolate
+          final result = await compute(
+            _processSingleImageIsolate,
+            pageImage.bytes,
+          );
 
-            // Extração de luminância (Grayscale 1-canal) para o ZXing
-            final luminanceImage = image.convert(numChannels: 1);
-            final luminanceBytes = luminanceImage.toUint8List();
-
-            final result = zx.readBarcode(
-              luminanceBytes,
-              DecodeParams(
-                format: Format.qrCode,
-                width: luminanceImage.width,
-                height: luminanceImage.height,
-              ),
-            );
-
-            if (result.isValid && result.text != null) {
-              debugPrint(
-                '==> QR Code encontrado na página $i com escala $scale',
-              );
-              await page.close();
-              await document.close();
-              return result.text;
-            }
+          if (result != null) {
+            debugPrint('==> QR Code encontrado na página $i com escala $scale');
+            await page.close();
+            await document.close();
+            return result;
           }
         }
       }
@@ -160,6 +108,51 @@ class FileScannerService {
     return null;
   }
 
+  /// Decodifica uma imagem usando luminância para melhorar a leitura de QR codes
+  static String? _decodeWithLuminance(img.Image image) {
+    final luminanceImage = image.convert(numChannels: 1);
+    final result = zx.readBarcode(
+      luminanceImage.toUint8List(),
+      DecodeParams(
+        format: Format.qrCode,
+        width: luminanceImage.width,
+        height: luminanceImage.height,
+      ),
+    );
+    return (result.isValid && result.text != null) ? result.text : null;
+  }
+
+  /// Processa as várias resoluções de uma imagem de galeria numa thread separada
+  static String? _processImageDynamicIsolate(Uint8List bytes) {
+    img.Image? originalImage = img.decodeImage(bytes);
+    if (originalImage == null) return null;
+
+    final imageBase = img.bakeOrientation(originalImage);
+    final targetWidths = [800, 1200, 1600];
+
+    for (var width in targetWidths) {
+      img.Image resized;
+      if (imageBase.width > width) {
+        resized = img.copyResize(imageBase, width: width);
+      } else {
+        resized = imageBase;
+      }
+
+      final text = _decodeWithLuminance(resized);
+      if (text != null) return text;
+      if (imageBase.width <= width) break;
+    }
+    return null;
+  }
+
+  /// Processa uma única imagem (render do PDF) numa thread separada
+  static String? _processSingleImageIsolate(Uint8List bytes) {
+    img.Image? image = img.decodeImage(bytes);
+    if (image == null) return null;
+    return _decodeWithLuminance(image);
+  }
+  
+  /// Exibe um indicador de carregamento modal durante o processamento
   void _showLoading(BuildContext context) {
     showDialog(
       context: context,
