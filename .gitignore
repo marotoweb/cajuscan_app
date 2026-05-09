@@ -50,3 +50,4 @@ app.*.map.json
 # Android signing keystore
 *.jks
 android/key.properties
+android/.settings/
