@@ -1,0 +1,5 @@
+- File Import: New feature to read invoice QR Codes directly from PDF files or gallery images.
+- Scan Control: Added an option in Settings to toggle between continuous scanning or returning Home after each read.
+- Ergonomic Interface: Buttons repositioned at the bottom of the screen for easier thumb access.
+- Navigation Improvements: Scanner exit flow now respects the user's preferred scanning mode.
+- Stability: Optimized error handling to prevent duplicate reads or processing failures.
