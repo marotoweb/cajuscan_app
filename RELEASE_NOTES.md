@@ -1,13 +1,14 @@
 # 🚀 Novidades da Versão 1.0.6
 
 ### ✨ Novidades
-- **Modo de Scan Contínuo:** Adicionada uma nova opção nas Definições que permite ler múltiplas faturas consecutivamente sem sair da câmara, maximizando a produtividade.
+- **Importação de Ficheiros:** Adicionada a capacidade de ler o QR Code em faturas diretamente de ficheiros PDF ou imagens da galeria, ideal para faturas recebidas por via digital.
+- **Controlo de Fluxo de Scan:** O utilizador pode agora escolher nas Definições se deseja manter o scan contínuo (comportamento padrão anterior) ou se prefere regressar automaticamente à página inicial após cada leitura.
 - **Interface Ergonómica:** Reestruturação da Página Inicial para posicionar os botões de ação na metade inferior do ecrã, facilitando o uso com apenas uma mão.
 
 ### 🛠️ Melhorias e Refatoração
-- **Navegação Dinâmica:** O fluxo de saída do scanner agora adapta-se à preferência do utilizador (volta à Home no modo único ou permanece no scanner no modo contínuo).
-- **Tratamento de Erros:** Adicionado um atraso assíncrono após falhas de leitura no QR Code para evitar processamento redundante e melhorar a estabilidade.
+- **Navegação Dinâmica:** O fluxo de saída do scanner foi refatorado para respeitar a preferência de scan selecionada pelo utilizador.
+- **Tratamento de Erros:** Implementação de um atraso assíncrono e validações extra no scanner para evitar leituras duplicadas e aumentar a estabilidade em condições de pouca luz.
 
 ### 🔒 Segurança e Privacidade
-- **Logs de Debug:** Proteção de logs, garantindo que informações de diagnóstico não são expostas em versões de produção.
-- **Configurações Seguras:** A opção de "Confirmar no Cashew" passa a vir ativada por defeito para garantir que o utilizador valida sempre os dados na primeira utilização.
+- **Proteção de Logs:** Remoção total dos novos outputs de diagnóstico e logs de debug nas versões de produção.
+- **Configurações Seguras:** A opção de "Confirmar no Cashew" está agora ativa por defeito, garantindo que os dados são validados pelo utilizador na submissão para o Cashew
