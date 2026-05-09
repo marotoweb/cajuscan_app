@@ -44,6 +44,7 @@ Apresentação visual das principais funcionalidades da aplicação CajuScan.
 ## ✨ Funcionalidades Principais
 
 *   **Leitura de QR Code de Faturas:** Utiliza a câmara do telemóvel para digitalizar e processar instantaneamente os QR Codes das faturas emitidas em Portugal.
+* **Importação de Ficheiros (Novo):** Permite ler o QR Code diretamente de ficheiros **PDF** ou **Imagens** da galeria, facilitando o registo de faturas digitais recebidas por email.
 *   **Integração com Cashew:** Envia os dados da fatura (valor, data, NIF do comerciante) diretamente para a aplicação Cashew, pré-preenchendo uma nova transação.
 *   **Gestão Inteligente de Comerciantes:**
     *   Guarda automaticamente o NIF de cada comerciante.
@@ -66,12 +67,13 @@ Apresentação visual das principais funcionalidades da aplicação CajuScan.
 
 ## 🛠️ Tecnologias Utilizadas
 
-*   **Framework:** [Flutter](https://flutter.dev/ )
-*   **Linguagem:** [Dart](https://dart.dev/ )
+*   **Framework:** [Flutter](https://flutter.dev/)
+*   **Linguagem:** [Dart](https://dart.dev/)
 *   **Leitura de QR Code:** [flutter_zxing](https://pub.dev/packages/flutter_zxing)
-*   **Armazenamento Local:** [shared_preferences](https://pub.dev/packages/shared_preferences )
-*   **Interação com Outras Apps:** [url_launcher](https://pub.dev/packages/url_launcher )
-*   **Seleção de Ficheiros (Backup/Restauro):** [file_picker](https://pub.dev/packages/file_picker )
+*   **Processamento de PDF:** [native_pdf_renderer](https://pub.dev/packages/native_pdf_renderer)
+*   **Armazenamento Local:** [shared_preferences](https://pub.dev/packages/shared_preferences)
+*   **Interação com Outras Apps:** [url_launcher](https://pub.dev/packages/url_launcher)
+*   **Seleção de Ficheiros:** [file_picker](https://pub.dev/packages/file_picker)
 *   **Informação da Aplicação:** [package_info_plus](https://pub.dev/packages/package_info_plus )
 
 ## 🚀 Como Compilar e Instalar
