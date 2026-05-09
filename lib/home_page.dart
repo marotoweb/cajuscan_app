@@ -13,32 +13,39 @@ class HomePage extends StatelessWidget {
   Future<void> _handleFileImport(BuildContext context) async {
     final fileScanner = FileScannerService();
 
-    // O serviço orquestra a leitura e devolve o dado bruto (String)
+    // O serviço devolve:
+    // - O texto do QR Code (Sucesso)
+    // - 'NOT_FOUND' (Ficheiro processado, mas sem código)
+    // - null (Utilizador cancelou a seleção)
     final qrData = await fileScanner.selectAndScan(context);
 
     if (!context.mounted) return;
 
-    if (qrData != null) {
-      try {
-        final fatura = Fatura.fromQrCodeString(qrData);
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => ConfirmationPage(fatura: fatura),
-          ),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro ao interpretar os dados da fatura.'),
-          ),
-        );
-      }
-    } else {
-      // Se qrData é null, avisamos o utilizador
+    // Se o utilizador cancelou, saímos em silêncio sem mostrar SnackBar
+    if (qrData == null) return;
+
+    if (qrData == 'NOT_FOUND') {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Não foi detetado nenhum QR Code válido no ficheiro.'),
           backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final fatura = Fatura.fromQrCodeString(qrData);
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ConfirmationPage(fatura: fatura),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Erro ao interpretar os dados da fatura.'),
+          backgroundColor: Colors.red,
         ),
       );
     }

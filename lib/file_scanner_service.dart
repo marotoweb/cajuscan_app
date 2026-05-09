@@ -7,18 +7,31 @@ import 'package:pdfx/pdfx.dart';
 import 'package:flutter_zxing/flutter_zxing.dart';
 import 'package:image/image.dart' as img;
 
+/// Serviço responsável pelo processamento e extração de QR Codes de ficheiros.
 class FileScannerService {
   /// Orquestra a seleção e a leitura do código, independentemente do formato
+  /// Retorna a String se for uma fatura válida (começa por A:),
+  /// 'NOT_FOUND' se não encontrar ou for formato inválido,
+  /// ou null se o utilizador cancelar.
   Future<String?> selectAndScan(BuildContext context) async {
-    debugPrint('==> Iniciando selectAndScan');
+    if (kDebugMode) {
+      debugPrint('==> Iniciando selectAndScan');
+    }
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
     );
 
-    if (result == null || result.files.single.path == null) return null;
+    if (result == null || result.files.single.path == null) {
+      if (kDebugMode) {
+        debugPrint('==> Seleção cancelada pelo utilizador');
+      }
+      return null;
+    }
 
-    debugPrint('==> Ficheiro selecionado: ${result.files.single.path}');
+    if (kDebugMode) {
+      debugPrint('==> Ficheiro selecionado: ${result.files.single.path}');
+    }
 
     // Feedback visual
     if (context.mounted) _showLoading(context);
@@ -34,20 +47,38 @@ class FileScannerService {
 
       // Decisão de processamento baseada na extensão
       if (extension == 'pdf') {
-        debugPrint('==> A processar PDF: $filePath');
+        if (kDebugMode) {
+          debugPrint('==> A processar PDF: $filePath');
+        }
         qrData = await _scanPdf(filePath);
       } else {
-        debugPrint('==> A processar Imagem: $filePath');
+        if (kDebugMode) {
+          debugPrint('==> A processar Imagem: $filePath');
+        }
         qrData = await _scanImage(filePath);
       }
 
-      debugPrint('==> Resultado final do scan: $qrData');
+      if (kDebugMode) {
+        debugPrint('==> Resultado final do scan: $qrData');
+      }
+
       if (context.mounted) Navigator.of(context).pop();
-      return qrData;
+
+      // Validação simples
+      if (qrData != null && qrData.startsWith('A:')) {
+        return qrData;
+      }
+
+      if (kDebugMode) {
+        debugPrint('==> QR Code ignorado por formato inválido: $qrData');
+      }
+      return 'NOT_FOUND';
     } catch (e) {
-      debugPrint('==> Erro crítico no FileScannerService: $e');
+      if (kDebugMode) {
+        debugPrint('==> Erro crítico no FileScannerService: $e');
+      }
       if (context.mounted) Navigator.of(context).pop();
-      return null;
+      return 'NOT_FOUND';
     }
   }
 
@@ -73,11 +104,15 @@ class FileScannerService {
     final scales = [1.5, 2.5, 4.0, 5.0];
 
     for (var i = 1; i <= pagesToScan; i++) {
-      debugPrint('==> Analisando página $i de $totalPages');
+      if (kDebugMode) {
+        debugPrint('==> Analisando página $i de $totalPages');
+      }
       final page = await document.getPage(i);
 
       for (var scale in scales) {
-        debugPrint('==> A tentar escala $scale na página $i');
+        if (kDebugMode) {
+          debugPrint('==> A tentar escala $scale na página $i');
+        }
 
         final pageImage = await page.render(
           width: page.width * scale,
@@ -93,8 +128,13 @@ class FileScannerService {
             pageImage.bytes,
           );
 
-          if (result != null) {
-            debugPrint('==> QR Code encontrado na página $i com escala $scale');
+          // Se encontrar algo que pareça uma fatura, interrompe logo o PDF
+          if (result != null && result.startsWith('A:')) {
+            if (kDebugMode) {
+              debugPrint(
+                '==> QR Code encontrado na página $i com escala $scale',
+              );
+            }
             await page.close();
             await document.close();
             return result;
@@ -131,15 +171,16 @@ class FileScannerService {
     final targetWidths = [800, 1200, 1600];
 
     for (var width in targetWidths) {
-      img.Image resized;
-      if (imageBase.width > width) {
-        resized = img.copyResize(imageBase, width: width);
-      } else {
-        resized = imageBase;
-      }
+      img.Image resized = (imageBase.width > width)
+          ? img.copyResize(imageBase, width: width)
+          : imageBase;
 
       final text = _decodeWithLuminance(resized);
-      if (text != null) return text;
+
+      // Se leu um QR Code que não é fatura, continua a tentar outras resoluções
+      // para ver se encontra o QR Code correto noutra escala.
+      if (text != null && text.startsWith('A:')) return text;
+
       if (imageBase.width <= width) break;
     }
     return null;
@@ -149,9 +190,11 @@ class FileScannerService {
   static String? _processSingleImageIsolate(Uint8List bytes) {
     img.Image? image = img.decodeImage(bytes);
     if (image == null) return null;
-    return _decodeWithLuminance(image);
+    final text = _decodeWithLuminance(image);
+
+    return (text != null && text.startsWith('A:')) ? text : null;
   }
-  
+
   /// Exibe um indicador de carregamento modal durante o processamento
   void _showLoading(BuildContext context) {
     showDialog(
