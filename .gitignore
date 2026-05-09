@@ -32,6 +32,9 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+android/.settings/
+android/.kotlin/
+macos/Flutter/
 
 # Symbolication related
 app.*.symbols
@@ -50,4 +53,3 @@ app.*.map.json
 # Android signing keystore
 *.jks
 android/key.properties
-android/.settings/
