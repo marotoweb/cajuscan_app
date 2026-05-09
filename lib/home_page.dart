@@ -53,9 +53,22 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double buttonWidth = MediaQuery.of(context).size.width * 0.8;
+    const double buttonHeight = 60.0;
+
+    final btnStyle = ElevatedButton.styleFrom(
+      fixedSize: Size(buttonWidth, buttonHeight),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30), // Laterais curvas
+      ),
+      textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+    );
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registo de Despesas'),
+        title: const Text('Registo de despesas'),
+        centerTitle: false,
         actions: [
           // Ícone único para Definições
           IconButton(
@@ -69,18 +82,26 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+      body: SafeArea(
+        child: Container(
+          width: double.infinity, // Força a Column a ter onde se centrar
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
+              const Spacer(),
+
               const Text(
                 'Selecione o método de leitura da fatura.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              const SizedBox(height: 30),
+
+              const SizedBox(height: 40),
 
               // Botão para digitalização via câmara
               ElevatedButton.icon(
@@ -93,25 +114,20 @@ class HomePage extends StatelessWidget {
                     ),
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(250, 55),
-                  textStyle: const TextStyle(fontSize: 18),
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                ),
+                style: btnStyle,
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 20),
 
               // Botão para importação de ficheiro (PDF, JPG, PNG)
               ElevatedButton.icon(
                 icon: const Icon(Icons.file_present),
                 label: const Text('Importar Ficheiro (PDF/Foto)'),
                 onPressed: () => _handleFileImport(context),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(250, 55),
-                  textStyle: const TextStyle(fontSize: 18),
-                ),
+                style: btnStyle,
               ),
+
+              const SizedBox(height: 40),
             ],
           ),
         ),
