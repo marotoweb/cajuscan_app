@@ -47,95 +47,116 @@ class FileScannerService {
     }
   }
 
-  /// Lê QR code de uma imagem (JPG/PNG)
+  /// Lê QR code de uma imagem (JPG/PNG) com resolução dinâmica
   Future<String?> _scanImage(String path) async {
     final Uint8List fileBytes = await File(path).readAsBytes();
 
-    // Decodificar a imagem
-    img.Image? image = img.decodeImage(fileBytes);
-    if (image == null) return null;
+    // Decodificar a imagem original
+    img.Image? originalImage = img.decodeImage(fileBytes);
+    if (originalImage == null) return null;
 
-    // Normaliza a orientação da foto (Exif)
-    image = img.bakeOrientation(image);
+    // Normaliza a orientação (Exif)
+    final imageBase = img.bakeOrientation(originalImage);
 
-    // Redimensionar para evitar estouro de memória e SIGSEGV
-    if (image.width > 800 || image.height > 800) {
-      image = img.copyResize(image, width: 800);
-    }
+    // Resoluções dinâmicas para fotos
+    final targetWidths = [800, 1200, 1600];
 
-    // Convertemos a imagem para escala de cinza e extraímos apenas o canal de brilho
-    final grayscale = img.grayscale(image);
-    final luminanceBytes = grayscale.getBytes(order: img.ChannelOrder.red);
+    for (var width in targetWidths) {
+      debugPrint('==> A tentar scan de imagem com largura: ${width}px');
 
-    final result = zx.readBarcode(
-      luminanceBytes,
-      DecodeParams(
-        format: Format.qrCode,
-        width: image.width,
-        height: image.height,
-      ),
-    );
+      img.Image resized;
+      if (imageBase.width > width) {
+        resized = img.copyResize(imageBase, width: width);
+      } else {
+        resized = imageBase;
+      }
 
-    return result.isValid ? result.text : null;
-  }
+      // Extração de luminância (Grayscale 1-canal) para o ZXing
+      final luminanceImage = resized.convert(numChannels: 1);
+      final luminanceBytes = luminanceImage.toUint8List();
 
-  /// Lê QR code de um PDF
-  Future<String?> _scanPdf(String path) async {
-    PdfDocument? document;
-    try {
-      document = await PdfDocument.openFile(path);
-      final page = await document.getPage(1);
-
-      debugPrint('==> A renderizar metade superior do PDF (alta resolução)');
-
-      // Renderizamos apenas a parte superior para poupar RAM e ganhar nitidez
-      final pageImage = await page.render(
-        width: page.width * 3,
-        height: page.height * 3,
-        format: PdfPageImageFormat.jpeg,
-        quality: 100,
-        // Cortamos a renderização na metade da altura (crop)
-        // Se a biblioteca não suportar o crop no render, o multiplicador * 3 já ajudará
+      final result = zx.readBarcode(
+        luminanceBytes,
+        DecodeParams(
+          format: Format.qrCode,
+          width: luminanceImage.width,
+          height: luminanceImage.height,
+        ),
       );
 
-      await page.close();
-      await document.close();
+      if (result.isValid && result.text != null) {
+        debugPrint('==> QR Code encontrado na imagem com ${width}px');
+        return result.text;
+      }
 
-      if (pageImage != null) {
-        img.Image? image = img.decodeImage(pageImage.bytes);
-        if (image != null) {
-          image = img.bakeOrientation(image);
+      // Se a imagem original já era menor que a próxima largura, não vale a pena tentar aumentar
+      if (imageBase.width <= width) break;
+    }
 
-          // Aplicamos um filtro de nitidez (sharpen) para definir melhor os cantos do QR
-          image = img.grayscale(image);
-          image = img.contrast(
-            image,
-            contrast: 180,
-          ); // Contraste agressivo para digital
+    return null;
+  }
 
-          final luminanceBytes = image.getBytes(order: img.ChannelOrder.red);
+  /// Lê QR code de um PDF com escalas dinâmicas
+  Future<String?> _scanPdf(String path) async {
+    final document = await PdfDocument.openFile(path);
 
-          debugPrint('==> A tentar descodificar QR Code do PDF...');
-          final result = zx.readBarcode(
-            luminanceBytes,
-            DecodeParams(
-              format: Format.qrCode,
-              width: image.width,
-              height: image.height,
-            ),
-          );
+    // Analisamos as primeiras páginas (limitado a 5 por performance e memória)
+    final totalPages = document.pagesCount;
+    final pagesToScan = totalPages > 5 ? 5 : totalPages;
 
-          if (result.isValid && result.text != null) {
-            debugPrint('==> QR Code encontrado!');
-            return result.text;
+    // Escalas dinâmicas para renderização de páginas PDF
+    // 1.5 a 2.0: Ideal para PDFs digitais limpos
+    // 3.0: Equilibrado
+    // 5.0: Necessário para QR codes muito densos
+    final scales = [1.5, 2.5, 4.0, 5.0];
+
+    for (var i = 1; i <= pagesToScan; i++) {
+      debugPrint('==> Analisando página $i de $totalPages');
+      final page = await document.getPage(i);
+
+      for (var scale in scales) {
+        debugPrint('==> A tentar escala $scale na página $i');
+
+        final pageImage = await page.render(
+          width: page.width * scale,
+          height: page.height * scale,
+          format: PdfPageImageFormat.jpeg,
+          quality: 100,
+        );
+
+        if (pageImage != null) {
+          img.Image? image = img.decodeImage(pageImage.bytes);
+          if (image != null) {
+            debugPrint('==> A tentar descodificar QR Code do PDF...');
+
+            // Extração de luminância (Grayscale 1-canal) para o ZXing
+            final luminanceImage = image.convert(numChannels: 1);
+            final luminanceBytes = luminanceImage.toUint8List();
+
+            final result = zx.readBarcode(
+              luminanceBytes,
+              DecodeParams(
+                format: Format.qrCode,
+                width: luminanceImage.width,
+                height: luminanceImage.height,
+              ),
+            );
+
+            if (result.isValid && result.text != null) {
+              debugPrint(
+                '==> QR Code encontrado na página $i com escala $scale',
+              );
+              await page.close();
+              await document.close();
+              return result.text;
+            }
           }
         }
       }
-    } catch (e) {
-      debugPrint('==> Erro ao processar página do PDF: $e');
-    } finally {
-      await document?.close();
+      await page.close();
     }
+
+    await document.close();
     return null;
   }
 
