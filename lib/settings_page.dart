@@ -18,7 +18,8 @@ class _SettingsPageState extends State<SettingsPage> {
   final SettingsService _settingsService = SettingsService();
   bool _isProcessing = false;
 
-  bool _confirmOnCashew = false;
+  bool _confirmOnCashew = true;
+  bool _continuousScan = true;
   bool _isLoadingSettings = true;
 
   @override
@@ -30,9 +31,12 @@ class _SettingsPageState extends State<SettingsPage> {
   // --- Carregar definições ---
   Future<void> _loadSettings() async {
     final confirmValue = await _settingsService.getConfirmOnCashew();
+    final continuousValue = await _settingsService.getContinuousScan();
+
     if (mounted) {
       setState(() {
         _confirmOnCashew = confirmValue;
+        _continuousScan = continuousValue;
         _isLoadingSettings = false;
       });
     }
@@ -62,12 +66,7 @@ class _SettingsPageState extends State<SettingsPage> {
     }
 
     if (statusMessage.isNotEmpty && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(statusMessage),
-          backgroundColor: isError ? Colors.red : Colors.green,
-        ),
-      );
+      _showSnackBar(statusMessage, isError ? Colors.red : Colors.green);
     }
   }
 
@@ -93,19 +92,20 @@ class _SettingsPageState extends State<SettingsPage> {
     }
 
     if (statusMessage.isNotEmpty && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(statusMessage),
-          backgroundColor: isError ? Colors.red : Colors.green,
-        ),
-      );
+      _showSnackBar(statusMessage, isError ? Colors.red : Colors.green);
     }
+  }
+
+  void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Definições e Gestão')),
+      appBar: AppBar(title: const Text('Definições')),
       body: _isProcessing || _isLoadingSettings
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -127,10 +127,22 @@ class _SettingsPageState extends State<SettingsPage> {
                   },
                   secondary: const Icon(Icons.touch_app),
                 ),
+                SwitchListTile(
+                  title: const Text('Scan contínuo'),
+                  subtitle: const Text(
+                    'Permite ler várias faturas sem sair da câmara.',
+                  ),
+                  value: _continuousScan,
+                  onChanged: (bool value) async {
+                    await _settingsService.setContinuousScan(value);
+                    if (mounted) setState(() => _continuousScan = value);
+                  },
+                  secondary: const Icon(Icons.all_inclusive),
+                ),
                 const Divider(),
                 ListTile(
                   leading: const Icon(Icons.category),
-                  title: const Text('Gerir Categorias'),
+                  title: const Text('Gerir categorias'),
                   subtitle: const Text(
                     'Adicionar, editar ou apagar categorias',
                   ),
@@ -142,7 +154,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.store),
-                  title: const Text('Gerir Comerciantes'),
+                  title: const Text('Gerir comerciantes'),
                   subtitle: const Text('Ver e editar os NIFs guardados'),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (c) => const ManagementPage()),
@@ -151,7 +163,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 const Divider(),
                 ListTile(
                   leading: const Icon(Icons.upload_file),
-                  title: const Text('Exportar Dados (Backup)'),
+                  title: const Text('Exportar dados (Backup)'),
                   subtitle: const Text(
                     'Guarda todas as categorias e comerciantes num ficheiro',
                   ),
@@ -159,7 +171,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.file_download),
-                  title: const Text('Importar Dados (Restauro)'),
+                  title: const Text('Importar dados (Restauro)'),
                   subtitle: const Text(
                     'Carrega os dados a partir de um ficheiro de backup',
                   ),
@@ -168,7 +180,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 const Divider(),
                 ListTile(
                   leading: const Icon(Icons.info_outline),
-                  title: const Text('Sobre a Aplicação'),
+                  title: const Text('Sobre a aplicação'),
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(

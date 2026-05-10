@@ -1,9 +1,11 @@
 // lib/scanner_page.dart
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_zxing/flutter_zxing.dart';
 import 'fatura_model.dart';
 import 'confirmation_page.dart';
+import 'settings_service.dart';
 
 class ScannerPage extends StatefulWidget {
   const ScannerPage({super.key});
@@ -15,6 +17,7 @@ class ScannerPage extends StatefulWidget {
 class _ScannerPageState extends State<ScannerPage>
     with SingleTickerProviderStateMixin {
   bool _isProcessing = false;
+  final SettingsService _settingsService = SettingsService();
 
   late AnimationController _animationController;
   late Animation<double> _animation;
@@ -40,7 +43,7 @@ class _ScannerPageState extends State<ScannerPage>
     super.dispose();
   }
 
-  void _handleDetection(Code result) {
+  void _handleDetection(Code result) async {
     if (_isProcessing || result.text == null) return;
 
     final String code = result.text!;
@@ -53,23 +56,39 @@ class _ScannerPageState extends State<ScannerPage>
 
       try {
         final fatura = Fatura.fromQrCodeString(code);
-        // Usamos push para permitir voltar ao scanner se necessário
-        Navigator.of(context)
-            .push(
-              MaterialPageRoute(
-                builder: (context) => ConfirmationPage(fatura: fatura),
-              ),
-            )
-            .then((_) {
-              if (mounted) {
-                setState(() => _isProcessing = false);
-              }
-            });
+
+        // Verifica a preferência do utilizador
+        final isContinuous = await _settingsService.getContinuousScan();
+
+        if (!mounted) return;
+
+        if (isContinuous) {
+          // Empilha a página e reseta o scanner ao voltar
+          await Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ConfirmationPage(fatura: fatura),
+            ),
+          );
+
+          if (mounted) {
+            setState(() => _isProcessing = false);
+          }
+        } else {
+          // Substitui o scanner pela confirmação.
+          // Ao sair da confirmação, volta para a Home.
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => ConfirmationPage(fatura: fatura),
+            ),
+          );
+        }
       } catch (e) {
-        debugPrint('Erro ao ler QR: $e');
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) setState(() => _isProcessing = false);
-        });
+        if (kDebugMode) {
+          debugPrint('Erro ao ler QR: $e');
+        }
+        // Em caso de erro, aguarda 2 segundos e permite nova tentativa
+        await Future.delayed(const Duration(seconds: 2));
+        if (mounted) setState(() => _isProcessing = false);
       }
     }
   }
