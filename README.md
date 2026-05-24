@@ -41,42 +41,42 @@ Apresentação visual das principais funcionalidades da aplicação CajuScan.
 
 ---
 
-## ✨ Funcionalidades Principais
+## ✨ Funcionalidades principais
 
-*   **Leitura de QR Code de Faturas:** Utiliza a câmara do telemóvel para digitalizar e processar instantaneamente os QR Codes das faturas emitidas em Portugal.
-* **Importação de Ficheiros (Novo):** Permite ler o QR Code diretamente de ficheiros **PDF** ou **Imagens** da galeria, facilitando o registo de faturas digitais recebidas por email.
+*   **Leitura de código QR de faturas:** Utiliza a câmara do telemóvel para digitalizar e processar instantaneamente os c+odigos QR (ATCUD) das faturas emitidas em Portugal.
+* **Importação de ficheiros:** Permite ler o código QR diretamente de ficheiros **PDF** ou **imagens** da galeria, facilitando o registo de faturas digitais recebidas por email.
 *   **Integração com Cashew:** Envia os dados da fatura (valor, data, NIF do comerciante) diretamente para a aplicação Cashew, pré-preenchendo uma nova transação.
-*   **Gestão Inteligente de Comerciantes:**
+*   **Gestão inteligente de comerciantes:**
     *   Guarda automaticamente o NIF de cada comerciante.
-    *   Permite associar um nome personalizado (ex: "Continente") e uma categoria/subcategoria padrão a cada NIF.
+    *   Permite associar um nome personalizado (ex: "Comerciante XPTO") e uma categoria/subcategoria padrão a cada NIF.
     *   Na leitura seguinte de uma fatura do mesmo comerciante, sugere automaticamente o nome e a categoria guardados.
-*   **Gestão de Categorias:**
+*   **Gestão de categorias:**
     *   Sistema completo para criar, editar e apagar categorias e subcategorias de despesa.
     *   Permite restaurar uma lista de categorias padrão a qualquer momento.
-*   **Flexibilidade no Registo:**
+*   **Flexibilidade no registo:**
     *   Opção para registar a transação diretamente no Cashew (sem confirmação).
     *   Opção para abrir os dados no Cashew para revisão antes de guardar (requer confirmação).
-    *   Possibilidade de apenas guardar um novo comerciante a partir de um QR Code, sem criar uma transação.
-*   **Backup e Restauro:**
+    *   Possibilidade de apenas guardar um novo comerciante a partir de um código QR, sem criar uma transação.
+*   **Backup e testauro:**
     *   Funcionalidade para exportar todos os dados da aplicação (perfis de comerciantes e categorias) para um ficheiro de backup (`.json`).
     *   Permite importar dados a partir de um ficheiro de backup, facilitando a migração entre dispositivos.
-*   **Interface Intuitiva:**
+*   **Interface intuitiva:**
     *   Scanner de câmara com uma sobreposição clara para facilitar o alinhamento do QR Code.
     *   Design limpo e focado na simplicidade de uso.
-*   **Privacidade e Segurança:** Aplicação assinada digitalmente e preparada para builds reprodutíveis (**Reproducible Builds**).
+*   **Privacidade e segurança:** Aplicação assinada digitalmente e preparada para *builds* reprodutíveis (**Reproducible Builds**).
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Tecnologias utilizadas
 
 *   **Framework:** [Flutter](https://flutter.dev/)
 *   **Linguagem:** [Dart](https://dart.dev/)
-*   **Leitura de QR Code:** [flutter_zxing](https://pub.dev/packages/flutter_zxing)
+*   **Leitura de código QR:** [flutter_zxing](https://pub.dev/packages/flutter_zxing)
 *   **Processamento de PDF:** [native_pdf_renderer](https://pub.dev/packages/native_pdf_renderer)
-*   **Armazenamento Local:** [shared_preferences](https://pub.dev/packages/shared_preferences)
-*   **Interação com Outras Apps:** [url_launcher](https://pub.dev/packages/url_launcher)
-*   **Seleção de Ficheiros:** [file_picker](https://pub.dev/packages/file_picker)
-*   **Informação da Aplicação:** [package_info_plus](https://pub.dev/packages/package_info_plus )
+*   **Armazenamento local:** [shared_preferences](https://pub.dev/packages/shared_preferences)
+*   **Interação com outras apps:** [url_launcher](https://pub.dev/packages/url_launcher)
+*   **Seleção de ficheiros:** [file_picker](https://pub.dev/packages/file_picker)
+*   **Informação da aplicação:** [package_info_plus](https://pub.dev/packages/package_info_plus )
 
-## 🚀 Como Compilar e Instalar
+## 🚀 Como compilar e instalar
 
 Para compilar o projeto, precisa de ter o [Flutter SDK](https://docs.flutter.dev/get-started/install ) instalado e configurado.
 
@@ -105,7 +105,7 @@ Para compilar o projeto, precisa de ter o [Flutter SDK](https://docs.flutter.dev
     O ficheiro de instalação será gerado em `build/app/outputs/flutter-apk/app-release.apk`.
     *Nota: Para gerar uma build assinada idêntica à oficial, é necessário configurar as variáveis de ambiente da Keystore.*
 
-## 📄 Licença e Isenção de Responsabilidade
+## 📄 Licença e isenção de responsabilidade
 
 Este projeto é disponibilizado sob a licença **MIT**.
 
