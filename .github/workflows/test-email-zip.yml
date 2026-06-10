@@ -1,0 +1,7 @@
+name: Test Email ZIP Encryption
+on: workflow_dispatch
+jobs:
+  stub:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Stub"
