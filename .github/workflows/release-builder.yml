@@ -73,24 +73,6 @@ jobs:
           find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e '1a add_link_options("LINKER:--build-id=none")' {} \;
           find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e "1a add_compile_options(\"-ffile-prefix-map=$GITHUB_WORKSPACE=/tmp/build\")" {} \;
 
-          # 2. Limpeza Física Profunda (Remove o código antes de compilar)
-          # Atacamos ficheiros binários e código-fonte que possam conter o Play Core
-          # find "$PUB_CACHE" -type f \( -name "*.aar" -o -name "*.jar" -o -name "*.java" -o -name "*.kt" \) | xargs grep -l "SplitInstallManager" | xargs rm -f || true
-
-          # 3. Injeção Gradle (Bloqueio em nível de dependência)
-          # Substitui qualquer tentativa de baixar Play Core por um alvo vazio
-          # printf "\nconfigurations.all { resolutionStrategy.eachDependency { if (requested.group == \"com.google.android.play\") { useTarget(\"dev.flutter:empty:1.0\") } } }\n" >> android/app/build.gradle.kts
-          
-          # 4. Limpeza de rasto e conformidade (Dexopt e ArtProfiles)
-          # printf "\nandroid { packaging { resources { excludes += \"assets/dexopt/*\" } } }\n" >> android/app/build.gradle.kts
-          # printf "\ntasks.withType<org.gradle.api.Task>().configureEach { if (name.contains(\"ArtProfile\", ignoreCase = true)) { enabled = false } }\n" >> android/app/build.gradle.kts
-          
-          # 5. Reset Total (Garante que nenhum lixo de cache entre no APK)
-          # rm -rf android/app/build android/.gradle
-          # find . -name "*.prof" -delete
-          # find . -name "*.profm" -delete
-          # flutter clean
-
       # 7. Compilar o APK de Release
       - name: Build APK
         run: |
@@ -99,9 +81,7 @@ jobs:
           # Build limpo e determinístico
           flutter build apk --release --no-tree-shake-icons
 
-      # 8. Renomear o APK (Opcional, mas recomendado)
-      # Renomeia o `app-release.apk` para um nome mais descritivo, incluindo a versão da tag.
-      # `${{ github.ref_name }}` é uma variável do GitHub que contém o nome da tag (ex: "v1.0.0").
+      # 8. Renomear o APK
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk CajuScan-${{ github.ref_name }}.apk
 
@@ -131,3 +111,13 @@ jobs:
           tag_name: ${{ github.ref_name }}
           # O corpo da release, lido do ficheiro RELEASE_NOTES.md.
           body: ${{ env.RELEASE_BODY }}
+
+      # 11. Notificar o Servidor de Builds do F-Droid
+      - name: Notify F-Droid Build Server
+        run: |
+          # Extrai de forma dinâmica o número inteiro após o símbolo '+' na linha da versão
+          VERSION_CODE=$(grep 'version:' pubspec.yaml | sed 's/.*+//' | tr -d '[:space:]')
+          
+          curl -X POST https://fdroid.org/api/v1/submit-build \
+            -d "appId=com.marotoweb.cajuscan_app" \
+            -d "versionCode=$VERSION_CODE"
