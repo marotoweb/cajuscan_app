@@ -1,0 +1,35 @@
+name: Test Email ZIP Encryption
+
+on:
+  workflow_dispatch: # Permite a execução manual na interface do GitHub
+
+jobs:
+  test-zip-send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Mock File and Encrypt ZIP
+        run: |
+          # 1. Cria o ficheiro de texto simples
+          echo "teste" > teste.txt
+          
+          # 2. Comprime o ficheiro num arquivo ZIP protegido por palavra-passe
+          # O parâmetro -P introduz a password diretamente a partir do Secret
+          zip -P "${{ secrets.ZIP_PASSWORD }}" teste_encriptado.zip teste.txt
+          
+          # 3. Limpeza do ficheiro de texto original por segurança
+          rm teste.txt
+
+      - name: Send Email with Encrypted Attachment
+        uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: 465
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          
+          subject: "Teste de Envio Seguro - CajuScan"
+          to: ${{ secrets.TEST_RECEIVER_EMAIL }}
+          from: "GitHub Actions Test <${{ secrets.SMTP_USERNAME }}>"
+          body: "Em anexo encontra-se o ficheiro ZIP de teste cifrado. Utilize a palavra-passe definida nos Secrets para extrair."
+          
+          attachments: teste_encriptado.zip
