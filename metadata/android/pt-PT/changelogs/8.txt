@@ -1,0 +1,3 @@
+- Importar categorias do Cashew: O CajuScan aparece agora no share sheet do Cashew, permitindo importar categorias directamente sem sair da app.
+- Importação manual: Nova opção nas Definições para carregar uma exportação de categorias a partir de um ficheiro JSON.
+- Confirmação antes de substituir: Ao importar, é sempre apresentado um diálogo com o número de categorias encontradas antes de qualquer alteração.

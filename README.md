@@ -53,11 +53,12 @@ Apresentação visual das principais funcionalidades da aplicação CajuScan.
 *   **Gestão de categorias:**
     *   Sistema completo para criar, editar e apagar categorias e subcategorias de despesa.
     *   Permite restaurar uma lista de categorias padrão a qualquer momento.
+    *   Importa categorias directamente do Cashew via partilha, ou manualmente a partir de um ficheiro JSON/TXT.
 *   **Flexibilidade no registo:**
     *   Opção para registar a transação diretamente no Cashew (sem confirmação).
     *   Opção para abrir os dados no Cashew para revisão antes de guardar (requer confirmação).
     *   Possibilidade de apenas guardar um novo comerciante a partir de um código QR, sem criar uma transação.
-*   **Backup e testauro:**
+*   **Backup e restauro:**
     *   Funcionalidade para exportar todos os dados da aplicação (perfis de comerciantes e categorias) para um ficheiro de backup (`.json`).
     *   Permite importar dados a partir de um ficheiro de backup, facilitando a migração entre dispositivos.
 *   **Interface intuitiva:**
@@ -75,6 +76,7 @@ Apresentação visual das principais funcionalidades da aplicação CajuScan.
 *   **Interação com outras apps:** [url_launcher](https://pub.dev/packages/url_launcher)
 *   **Seleção de ficheiros:** [file_picker](https://pub.dev/packages/file_picker)
 *   **Informação da aplicação:** [package_info_plus](https://pub.dev/packages/package_info_plus )
+*   **Recepção de intents:** [receive_sharing_intent](https://pub.dev/packages/receive_sharing_intent)
 
 ## 🚀 Como compilar e instalar
 

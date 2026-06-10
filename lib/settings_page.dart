@@ -5,6 +5,8 @@ import 'category_editor_page.dart';
 import 'backup_service.dart';
 import 'about_page.dart';
 import 'settings_service.dart';
+import 'cashew_category_import_service.dart';
+import 'category_management_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -16,6 +18,10 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final BackupService _backupService = BackupService();
   final SettingsService _settingsService = SettingsService();
+  final CashewCategoryImportService _cashewImportService =
+      CashewCategoryImportService();
+  final CategoryManagementService _categoryService =
+      CategoryManagementService();
   bool _isProcessing = false;
 
   bool _confirmOnCashew = true;
@@ -93,6 +99,61 @@ class _SettingsPageState extends State<SettingsPage> {
 
     if (statusMessage.isNotEmpty && mounted) {
       _showSnackBar(statusMessage, isError ? Colors.red : Colors.green);
+    }
+  }
+
+  Future<void> _handleCashewCategoryImport() async {
+    final result = await _cashewImportService.pickAndParse();
+
+    // Utilizador cancelou o diálogo de ficheiros
+    if (result.errorMessage == 'cancelled') return;
+
+    if (!result.success) {
+      if (mounted) {
+        _showSnackBar(result.errorMessage!, Colors.red);
+      }
+      return;
+    }
+
+    final categories = result.categories!;
+
+    if (!mounted) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Importar categorias do Cashew'),
+        content: Text(
+          'Foram encontradas ${categories.length} categorias.\n\n'
+          'Isto vai substituir todas as categorias actuais. Continuar?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Substituir'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await _categoryService.saveCategories(categories);
+      if (mounted) {
+        _showSnackBar(
+          '${categories.length} categorias importadas com sucesso.',
+          Colors.green,
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        _showSnackBar('Erro ao guardar as categorias.', Colors.red);
+      }
     }
   }
 
@@ -178,6 +239,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   onTap: _handleImport,
                 ),
                 const Divider(),
+                ListTile(
+                  leading: const Icon(Icons.swap_horiz),
+                  title: const Text('Importar categorias do Cashew'),
+                  subtitle: const Text(
+                    'Carrega as categorias a partir de uma exportação do Cashew',
+                  ),
+                  onTap: _isProcessing ? null : _handleCashewCategoryImport,
+                ),
                 ListTile(
                   leading: const Icon(Icons.info_outline),
                   title: const Text('Sobre a aplicação'),
