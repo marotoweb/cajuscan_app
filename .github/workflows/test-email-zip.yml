@@ -1,9 +1,7 @@
 name: Test Email ZIP Encryption
 
 on:
-  push:
-    branches:
-      - test-email # Substitui pelo nome exato da branch que criaste
+  workflow_dispatch: # Permite a execução manual na interface do GitHub
 
 jobs:
   test-zip-send:
