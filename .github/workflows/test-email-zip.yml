@@ -1,25 +1,27 @@
-name: Test Email ZIP Encryption
+name: Recover Keystore to Email
 
 on:
-  workflow_dispatch: # Permite a execução manual na interface do GitHub
+  push:
+    branches:
+      - test-email # Mantém o gatilho automático que usaste no teste anterior
+  workflow_dispatch: # Permite também a execução manual caso seja necessário
 
 jobs:
-  test-zip-send:
+  recover-and-send:
     runs-on: ubuntu-latest
     steps:
-      - name: Create Mock File and Encrypt ZIP
+      - name: Decode Keystore and Encrypt ZIP
         run: |
-          # 1. Cria o ficheiro de texto simples
-          echo "teste" > teste.txt
+          # 1. Reconstrói o ficheiro binário original a partir do Secret do GitHub
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > upload-keystore.jks
           
-          # 2. Comprime o ficheiro num arquivo ZIP protegido por palavra-passe
-          # O parâmetro -P introduz a password diretamente a partir do Secret
-          zip -P "${{ secrets.ZIP_PASSWORD }}" teste_encriptado.zip teste.txt
+          # 2. Comprime e cifra o ficheiro .jks num arquivo ZIP protegido por palavra-passe
+          zip -P "${{ secrets.ZIP_PASSWORD }}" keystore_recuperada.zip upload-keystore.jks
           
-          # 3. Limpeza do ficheiro de texto original por segurança
-          rm teste.txt
+          # 3. Limpeza imediata do ficheiro JKS desprotegido no runner
+          rm upload-keystore.jks
 
-      - name: Send Email with Encrypted Attachment
+      - name: Send Email with Encrypted Keystore
         uses: dawidd6/action-send-mail@v4
         with:
           server_address: ${{ secrets.SMTP_SERVER }}
@@ -27,9 +29,9 @@ jobs:
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
           
-          subject: "Teste de Envio Seguro - CajuScan"
+          subject: "Recuperação Segura de Keystore - CajuScan"
           to: ${{ secrets.TEST_RECEIVER_EMAIL }}
-          from: "GitHub Actions Test"
-          body: "Em anexo encontra-se o ficheiro ZIP de teste cifrado. Utilize a palavra-passe definida nos Secrets para extrair."
+          from: "GitHub Actions Recovery CajuScan keystore"
+          body: "Em anexo encontra-se o ficheiro da keystore cifrado em formato ZIP. Utilize a palavra-passe definida nos Secrets para extrair o ficheiro upload-keystore.jks."
           
-          attachments: teste_encriptado.zip
+          attachments: keystore_recuperada.zip
