@@ -111,13 +111,3 @@ jobs:
           tag_name: ${{ github.ref_name }}
           # O corpo da release, lido do ficheiro RELEASE_NOTES.md.
           body: ${{ env.RELEASE_BODY }}
-
-      # 11. Notificar o Servidor de Builds do F-Droid
-      - name: Notify F-Droid Build Server
-        run: |
-          # Extrai de forma dinâmica o número inteiro após o símbolo '+' na linha da versão
-          VERSION_CODE=$(grep 'version:' pubspec.yaml | sed 's/.*+//' | tr -d '[:space:]')
-          
-          curl -X POST https://fdroid.org/api/v1/submit-build \
-            -d "appId=com.marotoweb.cajuscan_app" \
-            -d "versionCode=$VERSION_CODE"
