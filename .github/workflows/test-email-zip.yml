@@ -29,7 +29,7 @@ jobs:
           
           subject: "Teste de Envio Seguro - CajuScan"
           to: ${{ secrets.TEST_RECEIVER_EMAIL }}
-          from: "GitHub Actions Test <${{ secrets.SMTP_USERNAME }}>"
+          from: "GitHub Actions Test"
           body: "Em anexo encontra-se o ficheiro ZIP de teste cifrado. Utilize a palavra-passe definida nos Secrets para extrair."
           
           attachments: teste_encriptado.zip
