@@ -24,11 +24,12 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
 
-            <!-- Receber JSON partilhado (exportação do Cashew) -->
+            <!-- Receber JSON partilhado (exportação do Cashew) 
+                 Por defeito o Cashew salva os ficheiros no formato JSON mas com extenção .txt -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain" />
+                <data android:mimeType="text/*" />
             </intent-filter>
 
             <intent-filter>
