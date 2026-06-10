@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_page.dart'; // Iremos criar este ficheiro a seguir
+import 'home_page.dart';
 
 void main() {
   runApp(const MyApp());
