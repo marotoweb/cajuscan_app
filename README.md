@@ -6,11 +6,8 @@
     height="80">](https://f-droid.org/pt/packages/com.marotoweb.cajuscan_app)
 
 [latest_release]: https://github.com/marotoweb/cajuscan/releases/latest
-
 [releases_shield]: https://img.shields.io/github/release/marotoweb/cajuscan.svg?style=popout
-
 [releases]: https://github.com/marotoweb/cajuscan/releases
-
 [downloads_total_shield]: https://img.shields.io/github/downloads/marotoweb/cajuscan/total
 
 <h1 align="center">
@@ -18,9 +15,12 @@
   CajuScan
 </h1>
 
-**CajuScan** é uma aplicação móvel para Android, desenvolvida em Flutter, que simplifica o registo de despesas em Portugal. A aplicação permite digitalizar o QR Code (ATCUD) presente nas faturas portuguesas, extrair automaticamente os dados da transação e enviá-los para a aplicação de gestão financeira [Cashew](https://cashewapp.web.app/ ).
+**CajuScan** é uma aplicação móvel para Android, desenvolvida em Flutter, que simplifica o registo de despesas em Portugal. A aplicação permite digitalizar o QR Code (ATCUD) presente nas faturas portuguesas, extrair automaticamente os dados da transação e enviá-los para a aplicação de gestão financeira [Cashew](https://cashewapp.web.app/).
 
-O objetivo é automatizar o processo manual de inserir despesas, poupando tempo e reduzindo erros.
+> 💡 **O que é o Cashew?**
+> O [Cashew](https://github.com/jameskokoska/Cashew) é uma aplicação de finanças pessoais de código aberto, focada na privacidade, que permite gerir orçamentos, contas e despesas de forma local. O CajuScan funciona como um assistente especializado para utilizadores do Cashew em Portugal, automatizando a inserção manual de faturas.
+
+O objetivo é poupar tempo e reduzir erros no preenchimento de transações do dia a dia.
 
 ---
 
@@ -66,6 +66,8 @@ Apresentação visual das principais funcionalidades da aplicação CajuScan.
     *   Design limpo e focado na simplicidade de uso.
 *   **Privacidade e segurança:** Aplicação assinada digitalmente e preparada para *builds* reprodutíveis (**Reproducible Builds**).
 
+---
+
 ## 🛠️ Tecnologias utilizadas
 
 *   **Framework:** [Flutter](https://flutter.dev/)
@@ -77,6 +79,8 @@ Apresentação visual das principais funcionalidades da aplicação CajuScan.
 *   **Seleção de ficheiros:** [file_picker](https://pub.dev/packages/file_picker)
 *   **Informação da aplicação:** [package_info_plus](https://pub.dev/packages/package_info_plus )
 *   **Recepção de intents:** [receive_sharing_intent](https://pub.dev/packages/receive_sharing_intent)
+
+---
 
 ## 🚀 Como compilar e instalar
 
@@ -106,6 +110,8 @@ Para compilar o projeto, precisa de ter o [Flutter SDK](https://docs.flutter.dev
     ```
     O ficheiro de instalação será gerado em `build/app/outputs/flutter-apk/app-release.apk`.
     *Nota: Para gerar uma build assinada idêntica à oficial, é necessário configurar as variáveis de ambiente da Keystore.*
+
+---
 
 ## 📄 Licença e isenção de responsabilidade
 
