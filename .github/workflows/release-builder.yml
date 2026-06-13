@@ -85,16 +85,23 @@ jobs:
       - name: Rename APK
         run: mv build/app/outputs/flutter-apk/app-release.apk CajuScan-${{ github.ref_name }}.apk
 
-      # 9. Ler notas para a Release
-      # Esta etapa lê o conteúdo do ficheiro RELEASE_NOTES.md para usar como corpo da release.       
-      - name: Read release body from file
+      # 9. Extrair notas da release atual
+      # Esta etapa isola apenas o bloco de texto do RELEASE_NOTES.md que corresponde à tag atual.
+      - name: Extract current release notes
         run: |
-          # Gera um delimitador único para evitar conflitos com o conteúdo do MD
-          DELIMITER=$(dd if=/dev/urandom bs=15 count=1 2>/dev/null | base64)
-          echo "RELEASE_BODY<<$DELIMITER" >> $GITHUB_ENV
-          cat RELEASE_NOTES.md >> $GITHUB_ENV
-          echo "" >> $GITHUB_ENV
-          echo "$DELIMITER" >> $GITHUB_ENV
+          TAG="${{ github.ref_name }}"
+          # Remove o prefixo 'v' caso a tag seja gerada como 'v1.0.3' em vez de '1.0.3'
+          VERSION=$(echo "$TAG" | sed 's/^v//')
+          
+          echo "A extrair notas para a versão: $VERSION"
+          
+          # Define o output multilinhas seguro para o GITHUB_ENV
+          echo "RELEASE_BODY<<EOF_MARKER" >> $GITHUB_ENV
+          
+          # O sed procura por '## [1.0.3]' ou '## 1.0.3' até encontrar o próximo '## ' ou fim do ficheiro
+          sed -n "/^## \[$VERSION\]\|^## $VERSION/,/^## /p" RELEASE_NOTES.md | sed '1d;$d' >> $GITHUB_ENV
+          
+          echo "EOF_MARKER" >> $GITHUB_ENV
 
       # 10. Fazer Upload do APK para a Release
       # Esta ação faz o upload do APK compilado e anexa-o à página da Release no GitHub.
@@ -109,5 +116,5 @@ jobs:
           name: "CajuScan ${{ github.ref_name }}"
           # O nome da tag associada à release.
           tag_name: ${{ github.ref_name }}
-          # O corpo da release, lido do ficheiro RELEASE_NOTES.md.
+          # O corpo da release, extraído dinamicamente do histórico do RELEASE_NOTES.md.
           body: ${{ env.RELEASE_BODY }}
