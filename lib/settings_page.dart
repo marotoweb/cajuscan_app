@@ -238,7 +238,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   onTap: _handleImport,
                 ),
-                const Divider(),
                 ListTile(
                   leading: const Icon(Icons.swap_horiz),
                   title: const Text('Importar categorias do Cashew'),
@@ -247,6 +246,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                   onTap: _isProcessing ? null : _handleCashewCategoryImport,
                 ),
+                const Divider(),
                 ListTile(
                   leading: const Icon(Icons.info_outline),
                   title: const Text('Sobre a aplicação'),

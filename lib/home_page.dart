@@ -113,7 +113,7 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Importar categorias do Cashew'),
+        title: const Text('Importar categorias'),
         content: Text(
           'Foram encontradas ${categories.length} categorias.\n\n'
           'Isto vai substituir todas as categorias actuais. Continuar?',
