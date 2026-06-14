@@ -1,56 +1,108 @@
-// lib/cashewcategory_import_service.dart
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 
-class CashewCategoryImportResult {
+class CashewImportResult {
   final Map<String, List<String>>? categories;
+  final List<String>? accounts;
   final String? errorMessage;
 
-  const CashewCategoryImportResult({this.categories, this.errorMessage});
+  const CashewImportResult({this.categories, this.accounts, this.errorMessage});
 
-  bool get success => categories != null;
+  bool get success => categories != null || accounts != null;
 }
 
-class CashewCategoryImportService {
-  Future<CashewCategoryImportResult> pickAndParse() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['json'],
-    );
-
-    if (result == null || result.files.single.path == null) {
-      return const CashewCategoryImportResult(errorMessage: 'cancelled');
-    }
-
+class CashewImportService {
+  Future<CashewImportResult> pickAndParse() async {
     try {
-      final file = File(result.files.single.path!);
-      final jsonString = await file.readAsString();
-      final data = json.decode(jsonString) as Map<String, dynamic>;
+      final result = await FilePicker.platform.pickFiles(type: FileType.any);
 
-      if (!data.containsKey('categories')) {
-        return const CashewCategoryImportResult(
-          errorMessage: 'Ficheiro inválido: não contém categorias do Cashew.',
+      if (result == null || result.files.isEmpty) {
+        return const CashewImportResult(
+          errorMessage: 'Nenhum ficheiro selecionado.',
         );
       }
 
-      final raw = data['categories'] as Map<String, dynamic>;
+      final file = result.files.first;
+      String jsonString;
 
-      if (raw.isEmpty) {
-        return const CashewCategoryImportResult(
-          errorMessage: 'O ficheiro não contém nenhuma categoria.',
+      if (kIsWeb) {
+        if (file.bytes == null) {
+          return const CashewImportResult(
+            errorMessage: 'Não foi possível ler os dados do ficheiro na Web.',
+          );
+        }
+        jsonString = utf8.decode(file.bytes!);
+      } else {
+        if (file.path == null) {
+          return const CashewImportResult(
+            errorMessage: 'Caminho do ficheiro inválido.',
+          );
+        }
+        final ioFile = File(file.path!);
+        jsonString = await ioFile.readAsString();
+      }
+
+      return parseJson(jsonString);
+    } catch (e) {
+      return CashewImportResult(
+        errorMessage: 'Erro ao selecionar o ficheiro: $e',
+      );
+    }
+  }
+
+  CashewImportResult parseJson(String jsonString) {
+    try {
+      final data = json.decode(jsonString);
+      if (data is! Map<String, dynamic>) {
+        return const CashewImportResult(
+          errorMessage: 'Formato JSON inválido. Deve ser um objeto.',
         );
       }
 
-      final categories = raw.map((key, value) {
-        final subs = (value as List<dynamic>).whereType<String>().toList();
-        return MapEntry(key, subs);
-      });
+      Map<String, List<String>>? importedCategories;
+      List<String>? importedAccounts;
 
-      return CashewCategoryImportResult(categories: categories);
-    } catch (_) {
-      return const CashewCategoryImportResult(
-        errorMessage: 'Erro ao ler o ficheiro. Verifique se é um JSON válido.',
+      // Parse das categorias
+      if (data.containsKey('categories')) {
+        final rawCategories = data['categories'];
+        if (rawCategories is Map<String, dynamic>) {
+          importedCategories = {};
+          for (var entry in rawCategories.entries) {
+            final key = entry.key;
+            final val = entry.value;
+            if (val is List) {
+              importedCategories[key] = val.map((e) => e.toString()).toList();
+            } else {
+              importedCategories[key] = [];
+            }
+          }
+        }
+      }
+
+      // Parse das contas
+      if (data.containsKey('accounts')) {
+        final rawAccounts = data['accounts'];
+        if (rawAccounts is List) {
+          importedAccounts = rawAccounts.map((e) => e.toString()).toList();
+        }
+      }
+
+      if (importedCategories == null && importedAccounts == null) {
+        return const CashewImportResult(
+          errorMessage:
+              'O ficheiro não contém chaves de categorias ou contas válidas do Cashew.',
+        );
+      }
+
+      return CashewImportResult(
+        categories: importedCategories,
+        accounts: importedAccounts,
+      );
+    } catch (e) {
+      return CashewImportResult(
+        errorMessage: 'Erro ao processar a estrutura do JSON: $e',
       );
     }
   }

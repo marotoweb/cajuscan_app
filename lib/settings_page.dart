@@ -5,7 +5,7 @@ import 'category_editor_page.dart';
 import 'backup_service.dart';
 import 'about_page.dart';
 import 'settings_service.dart';
-import 'cashew_category_import_service.dart';
+import 'cashew_import_service.dart';
 import 'category_management_service.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -18,8 +18,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final BackupService _backupService = BackupService();
   final SettingsService _settingsService = SettingsService();
-  final CashewCategoryImportService _cashewImportService =
-      CashewCategoryImportService();
+  final CashewImportService _cashewImportService = CashewImportService();
   final CategoryManagementService _categoryService =
       CategoryManagementService();
   bool _isProcessing = false;
@@ -124,8 +123,8 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (_) => AlertDialog(
         title: const Text('Importar categorias'),
         content: Text(
-          'Foram encontradas ${categories.length} categorias.\n\n'
-          'Isto vai substituir todas as categorias actuais. Continuar?',
+          'Foram encontradas ${categories.length} nomes de categorias.\n\n'
+          'Isto vai substituir todas os nomes das categorias actuais. Continuar?',
         ),
         actions: [
           TextButton(
@@ -146,13 +145,13 @@ class _SettingsPageState extends State<SettingsPage> {
       await _categoryService.saveCategories(categories);
       if (mounted) {
         _showSnackBar(
-          '${categories.length} categorias importadas com sucesso.',
+          '${categories.length} nomes das categorias importadas com sucesso.',
           Colors.green,
         );
       }
     } catch (_) {
       if (mounted) {
-        _showSnackBar('Erro ao guardar as categorias.', Colors.red);
+        _showSnackBar('Erro ao guardar nomes das categorias.', Colors.red);
       }
     }
   }
@@ -226,7 +225,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   leading: const Icon(Icons.upload_file),
                   title: const Text('Exportar dados (Backup)'),
                   subtitle: const Text(
-                    'Guarda todas as categorias e comerciantes num ficheiro',
+                    'Guarda todas os dados da aplicação num ficheiro',
                   ),
                   onTap: _handleExport,
                 ),
@@ -242,7 +241,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   leading: const Icon(Icons.swap_horiz),
                   title: const Text('Importar categorias do Cashew'),
                   subtitle: const Text(
-                    'Carrega as categorias a partir de uma exportação do Cashew',
+                    'Carrega os nomes das categorias a partir de uma exportação do Cashew',
                   ),
                   onTap: _isProcessing ? null : _handleCashewCategoryImport,
                 ),
