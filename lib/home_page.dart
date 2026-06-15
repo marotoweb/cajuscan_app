@@ -216,7 +216,7 @@ class _HomePageState extends State<HomePage> {
           // Ícone único para Definições
           IconButton(
             icon: const Icon(Icons.settings),
-            tooltip: 'Definições e Gestão',
+            tooltip: 'Definições e gestão',
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const SettingsPage()),
@@ -249,7 +249,7 @@ class _HomePageState extends State<HomePage> {
               // Botão para digitalização via câmara
               ElevatedButton.icon(
                 icon: const Icon(Icons.qr_code_scanner),
-                label: const Text('Digitalizar Fatura'),
+                label: const Text('Digitalizar fatura'),
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -265,7 +265,7 @@ class _HomePageState extends State<HomePage> {
               // Botão para importação de ficheiro (PDF, JPG, PNG)
               ElevatedButton.icon(
                 icon: const Icon(Icons.file_present),
-                label: const Text('Importar Ficheiro (PDF/Foto)'),
+                label: const Text('Importar ficheiro (PDF/Foto)'),
                 onPressed: () => _handleFileImport(context),
                 style: btnStyle,
               ),

@@ -43,9 +43,9 @@ class _ManagementPageState extends State<ManagementPage> {
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Apagar Comerciante'),
+        title: const Text('Eliminar comerciante'),
         content: const Text(
-          'Tem a certeza que deseja apagar este perfil? Esta ação não pode ser desfeita.',
+          'Tem a certeza que deseja eliminar este perfil? Esta ação não pode ser desfeita.',
         ),
         actions: [
           TextButton(
@@ -54,7 +54,7 @@ class _ManagementPageState extends State<ManagementPage> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Apagar', style: TextStyle(color: Colors.red)),
+            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -92,7 +92,7 @@ class _ManagementPageState extends State<ManagementPage> {
                     TextField(
                       controller: nameController,
                       decoration: const InputDecoration(
-                        labelText: 'Nome do Comerciante',
+                        labelText: 'Nome do comerciante',
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -180,7 +180,7 @@ class _ManagementPageState extends State<ManagementPage> {
           builder: (context, setDialogState) {
             final subcategories = _allCategories[selectedCategory] ?? [];
             return AlertDialog(
-              title: const Text('Adicionar Novo Comerciante'),
+              title: const Text('Adicionar comerciante'),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -199,7 +199,7 @@ class _ManagementPageState extends State<ManagementPage> {
                     TextField(
                       controller: nameController,
                       decoration: const InputDecoration(
-                        labelText: 'Nome do Comerciante',
+                        labelText: 'Nome do comerciante',
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -303,10 +303,10 @@ class _ManagementPageState extends State<ManagementPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Comerciantes Guardados')),
+      appBar: AppBar(title: const Text('Comerciantes guardados')),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
-        tooltip: 'Adicionar Comerciante',
+        tooltip: 'Adicionar comerciante',
         child: const Icon(Icons.add),
       ),
       body: FutureBuilder<Map<String, MerchantProfile>>(
@@ -365,7 +365,7 @@ class _ManagementPageState extends State<ManagementPage> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
-                        tooltip: 'Apagar',
+                        tooltip: 'Eliminar',
                         onPressed: () => _deleteProfile(nif),
                       ),
                     ],

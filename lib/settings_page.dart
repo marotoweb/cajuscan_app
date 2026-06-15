@@ -7,6 +7,8 @@ import 'about_page.dart';
 import 'settings_service.dart';
 import 'cashew_import_service.dart';
 import 'category_management_service.dart';
+import 'account_editor_page.dart';
+import 'account_management_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -21,6 +23,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final CashewImportService _cashewImportService = CashewImportService();
   final CategoryManagementService _categoryService =
       CategoryManagementService();
+  final AccountManagementService _accountService = AccountManagementService();
   bool _isProcessing = false;
 
   bool _confirmOnCashew = true;
@@ -101,11 +104,24 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  Future<void> _handleCashewCategoryImport() async {
+  Future<void> _handleCashewImport() async {
+    setState(() {
+      _isProcessing = true;
+    });
+
     final result = await _cashewImportService.pickAndParse();
 
+    if (mounted) {
+      setState(() {
+        _isProcessing = false;
+      });
+    }
+
     // Utilizador cancelou o diálogo de ficheiros
-    if (result.errorMessage == 'cancelled') return;
+    if (result.errorMessage == 'cancelled' ||
+        result.errorMessage == 'Nenhum ficheiro selecionado.') {
+      return;
+    }
 
     if (!result.success) {
       if (mounted) {
@@ -114,17 +130,40 @@ class _SettingsPageState extends State<SettingsPage> {
       return;
     }
 
-    final categories = result.categories!;
+    final categories = result.categories;
+    final accounts = result.accounts;
+
+    final hasCategories = categories != null && categories.isNotEmpty;
+    final hasAccounts = accounts != null && accounts.isNotEmpty;
+
+    if (!hasCategories && !hasAccounts) {
+      if (mounted) {
+        _showSnackBar(
+          'O ficheiro não contém dados válidos para importação.',
+          Colors.red,
+        );
+      }
+      return;
+    }
 
     if (!mounted) return;
+
+    // Construção da mensagem informativa do diálogo
+    final List<String> infoLines = [];
+    if (hasCategories) {
+      infoLines.add('Foram encontradas ${categories.length} categorias.');
+    }
+    if (hasAccounts) {
+      infoLines.add('Foram encontradas ${accounts.length} contas.');
+    }
 
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Importar categorias'),
+        title: const Text('Importar dados do Cashew'),
         content: Text(
-          'Foram encontradas ${categories.length} nomes de categorias.\n\n'
-          'Isto vai substituir todas os nomes das categorias actuais. Continuar?',
+          '${infoLines.join('\n')}\n\n'
+          'Isto irá substituir as configurações atuais na aplicação. Continuar?',
         ),
         actions: [
           TextButton(
@@ -142,16 +181,27 @@ class _SettingsPageState extends State<SettingsPage> {
     if (confirm != true) return;
 
     try {
-      await _categoryService.saveCategories(categories);
+      final List<String> successMessages = [];
+
+      if (hasCategories) {
+        await _categoryService.saveCategories(categories);
+        successMessages.add('${categories.length} categorias');
+      }
+
+      if (hasAccounts) {
+        await _accountService.saveAccounts(accounts);
+        successMessages.add('${accounts.length} contas');
+      }
+
       if (mounted) {
         _showSnackBar(
-          '${categories.length} nomes das categorias importadas com sucesso.',
+          'Dados importados com sucesso: ${successMessages.join(' e ')}.',
           Colors.green,
         );
       }
     } catch (_) {
       if (mounted) {
-        _showSnackBar('Erro ao guardar nomes das categorias.', Colors.red);
+        _showSnackBar('Erro ao guardar os dados do Cashew.', Colors.red);
       }
     }
   }
@@ -201,10 +251,25 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 const Divider(),
                 ListTile(
+                  leading: const Icon(Icons.account_balance_wallet),
+                  title: const Text('Gerir contas'),
+                  subtitle: const Text(
+                    'Adicionar, editar ou eliminar contas de destino do Cashew',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (c) => const AccountEditorPage(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.category),
                   title: const Text('Gerir categorias'),
                   subtitle: const Text(
-                    'Adicionar, editar ou apagar categorias',
+                    'Adicionar, editar ou eliminar categorias e subcategorias do Cashew',
                   ),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
@@ -215,7 +280,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 ListTile(
                   leading: const Icon(Icons.store),
                   title: const Text('Gerir comerciantes'),
-                  subtitle: const Text('Ver e editar os NIFs guardados'),
+                  subtitle: const Text(
+                    'Ver e editar pefil de comerciantes guardados',
+                  ),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (c) => const ManagementPage()),
                   ),
@@ -239,11 +306,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.swap_horiz),
-                  title: const Text('Importar categorias do Cashew'),
+                  title: const Text('Importar dados do Cashew'),
                   subtitle: const Text(
-                    'Carrega os nomes das categorias a partir de uma exportação do Cashew',
+                    'Carrega categorias e contas a partir de uma exportação do Cashew',
                   ),
-                  onTap: _isProcessing ? null : _handleCashewCategoryImport,
+                  onTap: _isProcessing ? null : _handleCashewImport,
                 ),
                 const Divider(),
                 ListTile(

@@ -57,7 +57,7 @@ class _AboutPageState extends State<AboutPage> {
           // Secção do GitHub
           ListTile(
             leading: const Icon(Icons.code),
-            title: const Text('Código Fonte (GitHub)'),
+            title: const Text('Código fonte (GitHub)'),
             subtitle: const Text(githubUrl),
             onTap: () => _launchURL(githubUrl),
             trailing: const Icon(Icons.open_in_new),
@@ -67,7 +67,7 @@ class _AboutPageState extends State<AboutPage> {
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0),
             child: Text(
-              'Termos de Utilização e Isenção de Responsabilidade',
+              'Termos de utilização e isenção de responsabilidade',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ),
@@ -87,7 +87,7 @@ class _AboutPageState extends State<AboutPage> {
           const SizedBox(height: 20),
           Center(
             child: Text(
-              'Versão da App: $_appVersion',
+              'Versão: $_appVersion',
               style: const TextStyle(color: Colors.black),
             ),
           ),

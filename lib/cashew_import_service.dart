@@ -1,3 +1,4 @@
+// lib/cashew_import_service.dart
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
@@ -16,12 +17,13 @@ class CashewImportResult {
 class CashewImportService {
   Future<CashewImportResult> pickAndParse() async {
     try {
-      final result = await FilePicker.platform.pickFiles(type: FileType.any);
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json', 'txt'],
+      );
 
       if (result == null || result.files.isEmpty) {
-        return const CashewImportResult(
-          errorMessage: 'Nenhum ficheiro selecionado.',
-        );
+        return const CashewImportResult(errorMessage: 'cancelled');
       }
 
       final file = result.files.first;
@@ -67,16 +69,24 @@ class CashewImportService {
       // Parse das categorias
       if (data.containsKey('categories')) {
         final rawCategories = data['categories'];
-        if (rawCategories is Map<String, dynamic>) {
-          importedCategories = {};
-          for (var entry in rawCategories.entries) {
+        if (rawCategories is Map<String, dynamic> && rawCategories.isNotEmpty) {
+          final Map<String, List<String>> tempCategories = {};
+
+          for (final entry in rawCategories.entries) {
             final key = entry.key;
             final val = entry.value;
             if (val is List) {
-              importedCategories[key] = val.map((e) => e.toString()).toList();
+              tempCategories[key] = val
+                  .map((e) => e.toString().trim())
+                  .where((e) => e.isNotEmpty)
+                  .toList();
             } else {
-              importedCategories[key] = [];
+              tempCategories[key] = [];
             }
+          }
+
+          if (tempCategories.isNotEmpty) {
+            importedCategories = tempCategories;
           }
         }
       }
@@ -85,14 +95,21 @@ class CashewImportService {
       if (data.containsKey('accounts')) {
         final rawAccounts = data['accounts'];
         if (rawAccounts is List) {
-          importedAccounts = rawAccounts.map((e) => e.toString()).toList();
+          final parsedAccounts = rawAccounts
+              .map((e) => e.toString().trim())
+              .where((e) => e.isNotEmpty)
+              .toList();
+
+          if (parsedAccounts.isNotEmpty) {
+            importedAccounts = parsedAccounts;
+          }
         }
       }
 
       if (importedCategories == null && importedAccounts == null) {
         return const CashewImportResult(
           errorMessage:
-              'O ficheiro não contém chaves de categorias ou contas válidas do Cashew.',
+              'O ficheiro não contém chaves de categorias ou contas válidas com dados do Cashew.',
         );
       }
 

@@ -11,6 +11,7 @@ class CashewLauncher {
     required Fatura fatura,
     required String category,
     String? subcategory,
+    String? account,
     String? title,
   }) async {
     // Consulta o serviço para saber se o utilizador quer confirmar no Cashew.
@@ -38,6 +39,11 @@ class CashewLauncher {
       queryParameters['subcategory'] = subcategory;
     }
 
+    // Injetar a conta nos parâmetros que o Cashew vai ler
+    if (account != null && account.isNotEmpty) {
+      queryParameters['account'] = account;
+    }
+
     // Constrói o URI final usando o construtor Uri.
     // Este construtor trata AUTOMATICAMENTE da codificação de caracteres especiais
     // nos valores do mapa 'queryParameters'.
@@ -59,4 +65,3 @@ class CashewLauncher {
     }
   }
 }
-

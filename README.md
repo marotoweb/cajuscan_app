@@ -51,7 +51,7 @@ Apresentação visual das principais funcionalidades da aplicação CajuScan.
     *   Permite associar um nome personalizado (ex: "Comerciante XPTO") e uma categoria/subcategoria padrão a cada NIF.
     *   Na leitura seguinte de uma fatura do mesmo comerciante, sugere automaticamente o nome e a categoria guardados.
 *   **Gestão de categorias:**
-    *   Sistema completo para criar, editar e apagar categorias e subcategorias de despesa.
+    *   Sistema completo para criar, editar e eliminar categorias e subcategorias de despesa.
     *   Permite restaurar uma lista de categorias padrão a qualquer momento.
     *   Importa categorias directamente do Cashew via partilha, ou manualmente a partir de um ficheiro JSON/TXT.
 *   **Flexibilidade no registo:**

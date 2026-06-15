@@ -6,6 +6,7 @@ import 'profile_service.dart';
 import 'cashew_launcher.dart';
 import 'merchant_profile.dart';
 import 'category_management_service.dart';
+import 'account_management_service.dart';
 
 class ConfirmationPage extends StatefulWidget {
   final Fatura fatura;
@@ -20,9 +21,12 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
   final CashewLauncher _cashewLauncher = CashewLauncher();
   final CategoryManagementService _categoryService =
       CategoryManagementService();
+  final AccountManagementService _accountService = AccountManagementService();
 
   MerchantProfile? _profile;
   Map<String, List<String>> _allCategories = {};
+  List<String> _allAccounts = [];
+  String? _selectedAccount;
   bool _isLoading = true;
   bool _isProcessing = false;
 
@@ -44,12 +48,20 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
         widget.fatura.nifComerciante,
       );
       final loadedCategories = await _categoryService.getCategories();
+      final loadedAccounts = await _accountService.getAccounts();
+
       if (mounted) {
         setState(() {
           _allCategories = loadedCategories;
+          _allAccounts = loadedAccounts;
           _profile =
               loadedProfile ??
               MerchantProfile(name: 'Desconhecido', category: '');
+
+          // Define uma conta padrão inicial se houver contas disponíveis
+          if (_allAccounts.isNotEmpty) {
+            _selectedAccount = _allAccounts.first;
+          }
         });
       }
     } catch (e) {
@@ -86,6 +98,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
         fatura: widget.fatura,
         category: _profile!.category,
         subcategory: _profile!.subcategory,
+        account: _selectedAccount,
         title: _profile!.name,
       );
       if (mounted) Navigator.of(context).pop();
@@ -144,20 +157,29 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
 
     final localNameController = TextEditingController(text: _profile!.name);
 
-    String? selectedCategory = _profile!.category.isEmpty
+    String? dialogSelectedCategory = _profile!.category.isEmpty
         ? null
         : _profile!.category;
-    String? selectedSubcategory = _profile!.subcategory;
+    String? dialogSelectedSubcategory = _profile!.subcategory;
+    String? dialogSelectedAccount = _selectedAccount;
 
-    if (selectedCategory != null &&
-        !_allCategories.containsKey(selectedCategory)) {
-      selectedCategory = null;
-      selectedSubcategory = null;
+    if (dialogSelectedCategory != null &&
+        !_allCategories.containsKey(dialogSelectedCategory)) {
+      dialogSelectedCategory = null;
+      dialogSelectedSubcategory = null;
     }
-    if (selectedSubcategory != null &&
-        !(_allCategories[selectedCategory]?.contains(selectedSubcategory) ??
+    if (dialogSelectedSubcategory != null &&
+        !(_allCategories[dialogSelectedCategory]?.contains(
+              dialogSelectedSubcategory,
+            ) ??
             false)) {
-      selectedSubcategory = null;
+      dialogSelectedSubcategory = null;
+    }
+    if (dialogSelectedAccount != null &&
+        !_allAccounts.contains(dialogSelectedAccount)) {
+      dialogSelectedAccount = _allAccounts.isNotEmpty
+          ? _allAccounts.first
+          : null;
     }
 
     showDialog(
@@ -166,10 +188,10 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             final availableSubcategories =
-                _allCategories[selectedCategory] ?? [];
+                _allCategories[dialogSelectedCategory] ?? [];
 
             return AlertDialog(
-              title: const Text('Editar Perfil do Comerciante'),
+              title: const Text('Editar perfil do comerciante'),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -178,13 +200,13 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                     TextField(
                       controller: localNameController,
                       decoration: const InputDecoration(
-                        labelText: 'Nome do Comerciante',
+                        labelText: 'Nome do comerciante',
                       ),
                       autofocus: true,
                     ),
                     const SizedBox(height: 20),
                     DropdownButtonFormField<String>(
-                      initialValue: selectedCategory,
+                      initialValue: dialogSelectedCategory,
                       hint: const Text('Nenhuma (Selecionar no Cashew)'),
                       isExpanded: true,
                       items: [
@@ -199,17 +221,17 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       ],
                       onChanged: (newValue) {
                         setDialogState(() {
-                          selectedCategory = newValue;
-                          selectedSubcategory = null;
+                          dialogSelectedCategory = newValue;
+                          dialogSelectedSubcategory = null;
                         });
                       },
                       decoration: const InputDecoration(labelText: 'Categoria'),
                     ),
                     const SizedBox(height: 20),
-                    if (selectedCategory != null &&
-                        availableSubcategories.isNotEmpty)
+                    if (dialogSelectedCategory != null &&
+                        availableSubcategories.isNotEmpty) ...[
                       DropdownButtonFormField<String>(
-                        initialValue: selectedSubcategory,
+                        initialValue: dialogSelectedSubcategory,
                         hint: const Text('Nenhuma'),
                         isExpanded: true,
                         items: [
@@ -224,13 +246,42 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                         ],
                         onChanged: (newValue) {
                           setDialogState(() {
-                            selectedSubcategory = newValue;
+                            dialogSelectedSubcategory = newValue;
                           });
                         },
                         decoration: const InputDecoration(
                           labelText: 'Subcategoria',
                         ),
                       ),
+                      const SizedBox(height: 20),
+                    ],
+                    DropdownButtonFormField<String>(
+                      initialValue: dialogSelectedAccount,
+                      hint: const Text('Nenhuma (Selecionar no Cashew)'),
+                      isExpanded: true,
+                      items: [
+                        const DropdownMenuItem<String>(
+                          value: null,
+                          child: Text('Nenhuma (Selecionar no Cashew)'),
+                        ),
+                        ..._allAccounts.map(
+                          (acc) =>
+                              DropdownMenuItem(value: acc, child: Text(acc)),
+                        ),
+                      ],
+                      onChanged: (newValue) {
+                        setDialogState(() {
+                          dialogSelectedAccount = newValue;
+                        });
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Conta de destino',
+                        prefixIcon: Icon(
+                          Icons.account_balance_wallet_outlined,
+                          size: 20,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -245,14 +296,16 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       setState(() {
                         _profile = MerchantProfile(
                           name: localNameController.text,
-                          category: selectedCategory ?? '',
-                          subcategory: selectedSubcategory,
+                          category: dialogSelectedCategory ?? '',
+                          subcategory: dialogSelectedSubcategory,
                         );
+                        _selectedAccount =
+                            dialogSelectedAccount; // <-- Atualiza a conta selecionada na view principal
                       });
                       Navigator.of(context).pop();
                     }
                   },
-                  child: const Text('Confirmar Alterações'),
+                  child: const Text('Confirmar alterações'),
                 ),
               ],
             );
@@ -266,11 +319,11 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Confirmar Despesa'),
+        title: const Text('Confirmar despesa'),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
-            tooltip: 'Editar Nome/Categoria',
+            tooltip: 'Editar perfil',
             onPressed: _isLoading ? null : _showEditDialog,
           ),
         ],
@@ -309,8 +362,22 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                   ),
                   Card(
                     child: ListTile(
+                      leading: const Icon(
+                        Icons.account_balance_wallet,
+                        size: 40,
+                      ),
+                      title: const Text('Conta de destino'),
+                      subtitle: Text(
+                        _selectedAccount ??
+                            'Não definida (Selecionar no Cashew)',
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
                       leading: const Icon(Icons.euro, size: 40),
-                      title: const Text('Valor Total'),
+                      title: const Text('Valor total'),
                       subtitle: Text(
                         '${widget.fatura.valorTotal.toStringAsFixed(2)} €',
                         style: const TextStyle(
@@ -352,7 +419,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.save),
-                      label: const Text('Apenas Guardar Comerciante'),
+                      label: const Text('Apenas guardar comerciante'),
                       onPressed: _isProcessing ? null : _saveProfileOnly,
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),

@@ -37,7 +37,7 @@ class ProfileService {
     return profiles;
   }
 
-  // --- Apagar um perfil ---
+  // --- Eliminar um perfil ---
   Future<void> deleteProfile(String nif) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('$_prefix$nif');
