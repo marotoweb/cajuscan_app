@@ -57,7 +57,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _handleSharedContent(SharedMediaFile file) async {
-    // O Cashew partilha como texto — o conteúdo está em file.path
     String? jsonString;
 
     if (file.type == SharedMediaType.text) {
@@ -85,38 +84,57 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    if (!data.containsKey('categories')) {
-      // Pode ser outro tipo de partilha — ignorar silenciosamente
+    // Verifica se o JSON contém alguma das chaves esperadas do Cashew
+    if (!data.containsKey('categories') && !data.containsKey('accounts')) {
       return;
     }
 
-    final raw = data['categories'] as Map<String, dynamic>;
-    if (raw.isEmpty) {
-      _showError('O ficheiro não contém categorias.');
-      return;
+    // 1. Processar Categorias
+    Map<String, List<String>> categories = {};
+    if (data.containsKey('categories') && data['categories'] is Map) {
+      final rawCategories = data['categories'] as Map<String, dynamic>;
+      categories = rawCategories.map((key, value) {
+        final subs = (value as List<dynamic>).whereType<String>().toList();
+        return MapEntry(key, subs);
+      });
     }
 
-    final categories = raw.map((key, value) {
-      final subs = (value as List<dynamic>).whereType<String>().toList();
-      return MapEntry(key, subs);
-    });
+    // 2. Processar Contas
+    Map<String, dynamic> accounts = {};
+    if (data.containsKey('accounts') && data['accounts'] is Map) {
+      accounts = data['accounts'] as Map<String, dynamic>;
+    }
+
+    if (categories.isEmpty && accounts.isEmpty) {
+      _showError('O ficheiro não contém categorias nem contas válidas.');
+      return;
+    }
 
     if (!mounted) return;
-    _showImportDialog(categories);
+    _showImportDialog(categories, accounts);
   }
 
   Future<String> _readFile(String path) async {
     return File(path).readAsString();
   }
 
-  void _showImportDialog(Map<String, List<String>> categories) {
+  void _showImportDialog(
+    Map<String, List<String>> categories,
+    Map<String, dynamic> accounts,
+  ) {
+    // Constrói a mensagem informativa do diálogo baseada no que foi encontrado
+    final List<String> infoLines = [];
+    if (categories.isNotEmpty) infoLines.add('${categories.length} categorias');
+    if (accounts.isNotEmpty) infoLines.add('${accounts.length} contas');
+    final String contentMessage = infoLines.join(' e ');
+
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Importar categorias'),
+        title: const Text('Importar dados do Cashew'),
         content: Text(
-          'Foram encontradas ${categories.length} categorias.\n\n'
-          'Isto vai substituir todas as categorias actuais. Continuar?',
+          'Foram encontradas $contentMessage.\n\n'
+          'Isto vai substituir os dados atuais pelos novos. Continuar?',
         ),
         actions: [
           TextButton(
@@ -126,13 +144,17 @@ class _HomePageState extends State<HomePage> {
           ElevatedButton(
             onPressed: () async {
               Navigator.of(context).pop();
-              await _categoryService.saveCategories(categories);
+
+              // Alinha a persistência com o método unificado do teu serviço
+              await _categoryService.saveCategoriesAndAccounts(
+                categories: categories,
+                accounts: accounts,
+              );
+
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      '${categories.length} categorias importadas com sucesso.',
-                    ),
+                  const SnackBar(
+                    content: Text('Dados importados com sucesso.'),
                     backgroundColor: Colors.green,
                   ),
                 );
@@ -152,19 +174,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  /// Lida com a importação de ficheiros (PDF ou Imagem)
   Future<void> _handleFileImport(BuildContext context) async {
     final fileScanner = FileScannerService();
-
-    // O serviço devolve:
-    // - O texto do QR Code (Sucesso)
-    // - 'NOT_FOUND' (Ficheiro processado, mas sem código)
-    // - null (Utilizador cancelou a seleção)
     final qrData = await fileScanner.selectAndScan(context);
 
     if (!context.mounted) return;
-
-    // Se o utilizador cancelou, saímos em silêncio sem mostrar SnackBar
     if (qrData == null) return;
 
     if (qrData == 'NOT_FOUND') {
@@ -202,9 +216,7 @@ class _HomePageState extends State<HomePage> {
     final btnStyle = ElevatedButton.styleFrom(
       fixedSize: Size(buttonWidth, buttonHeight),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(30), // Laterais curvas
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
     );
 
@@ -213,7 +225,6 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Registo de despesas'),
         centerTitle: false,
         actions: [
-          // Ícone único para Definições
           IconButton(
             icon: const Icon(Icons.settings),
             tooltip: 'Definições e gestão',
@@ -227,13 +238,12 @@ class _HomePageState extends State<HomePage> {
       ),
       body: SafeArea(
         child: Container(
-          width: double.infinity, // Força a Column a ter onde se centrar
+          width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               const Spacer(),
-
               const Text(
                 'Selecione o método de leitura da fatura.',
                 textAlign: TextAlign.center,
@@ -243,10 +253,7 @@ class _HomePageState extends State<HomePage> {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-
               const SizedBox(height: 40),
-
-              // Botão para digitalização via câmara
               ElevatedButton.icon(
                 icon: const Icon(Icons.qr_code_scanner),
                 label: const Text('Digitalizar fatura'),
@@ -259,17 +266,13 @@ class _HomePageState extends State<HomePage> {
                 },
                 style: btnStyle,
               ),
-
               const SizedBox(height: 20),
-
-              // Botão para importação de ficheiro (PDF, JPG, PNG)
               ElevatedButton.icon(
                 icon: const Icon(Icons.file_present),
                 label: const Text('Importar ficheiro (PDF/Foto)'),
                 onPressed: () => _handleFileImport(context),
                 style: btnStyle,
               ),
-
               const SizedBox(height: 40),
             ],
           ),
