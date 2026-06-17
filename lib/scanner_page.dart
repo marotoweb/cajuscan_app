@@ -6,6 +6,8 @@ import 'package:flutter_zxing/flutter_zxing.dart';
 import 'fatura_model.dart';
 import 'confirmation_page.dart';
 import 'settings_service.dart';
+import 'category_management_service.dart';
+import 'account_management_service.dart';
 
 class ScannerPage extends StatefulWidget {
   const ScannerPage({super.key});
@@ -18,6 +20,10 @@ class _ScannerPageState extends State<ScannerPage>
     with SingleTickerProviderStateMixin {
   bool _isProcessing = false;
   final SettingsService _settingsService = SettingsService();
+
+  final CategoryManagementService _categoryService =
+      CategoryManagementService();
+  final AccountManagementService _accountService = AccountManagementService();
 
   late AnimationController _animationController;
   late Animation<double> _animation;
@@ -59,6 +65,8 @@ class _ScannerPageState extends State<ScannerPage>
 
         // Verifica a preferência do utilizador
         final isContinuous = await _settingsService.getContinuousScan();
+        final categories = await _categoryService.getCategories();
+        final accounts = await _accountService.getAccounts();
 
         if (!mounted) return;
 
@@ -66,7 +74,11 @@ class _ScannerPageState extends State<ScannerPage>
           // Empilha a página e reseta o scanner ao voltar
           await Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => ConfirmationPage(fatura: fatura),
+              builder: (context) => ConfirmationPage(
+                fatura: fatura,
+                categories: categories,
+                accounts: accounts,
+              ),
             ),
           );
 
@@ -78,7 +90,11 @@ class _ScannerPageState extends State<ScannerPage>
           // Ao sair da confirmação, volta para a Home.
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => ConfirmationPage(fatura: fatura),
+              builder: (context) => ConfirmationPage(
+                fatura: fatura,
+                categories: categories, // Parâmetro adicionado
+                accounts: accounts, // Parâmetro adicionado
+              ),
             ),
           );
         }

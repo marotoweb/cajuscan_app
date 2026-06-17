@@ -7,12 +7,18 @@ import 'fatura_model.dart';
 import 'profile_service.dart';
 import 'cashew_launcher.dart';
 import 'merchant_profile.dart';
-import 'category_management_service.dart';
-import 'account_management_service.dart';
 
 class ConfirmationPage extends StatefulWidget {
   final Fatura fatura;
-  const ConfirmationPage({super.key, required this.fatura});
+  final Map<String, List<String>> categories;
+  final List<String> accounts;
+
+  const ConfirmationPage({
+    super.key,
+    required this.fatura,
+    required this.categories,
+    required this.accounts,
+  });
 
   @override
   State<ConfirmationPage> createState() => _ConfirmationPageState();
@@ -21,9 +27,6 @@ class ConfirmationPage extends StatefulWidget {
 class _ConfirmationPageState extends State<ConfirmationPage> {
   final ProfileService _profileService = ProfileService();
   final CashewLauncher _cashewLauncher = CashewLauncher();
-  final CategoryManagementService _categoryService =
-      CategoryManagementService();
-  final AccountManagementService _accountService = AccountManagementService();
 
   MerchantProfile? _profile;
   Map<String, List<String>> _allCategories = {};
@@ -54,8 +57,9 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
       final loadedProfile = await _profileService.getProfile(
         widget.fatura.nifComerciante,
       );
-      final loadedCategories = await _categoryService.getCategories();
-      final loadedAccounts = await _accountService.getAccounts();
+
+      final loadedCategories = widget.categories;
+      final loadedAccounts = widget.accounts;
 
       final prefs = await SharedPreferences.getInstance();
 
@@ -66,7 +70,6 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
               loadedProfile ??
               MerchantProfile(name: 'Desconhecido', category: '');
 
-          // --- Algoritmo de predição inteligente de contas ---
           List<String> accounts = List<String>.from(loadedAccounts);
           final String globalRaw = prefs.getString(_globalHistoryKey) ?? '{}';
           final String merchantRaw =
@@ -110,8 +113,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
 
           _allAccounts = accounts;
           _suggestedAccount = prediction;
-          _selectedAccount =
-              prediction; // Define a conta preditiva como selecionada por padrão
+          _selectedAccount = prediction;
         });
       }
     } catch (e) {
@@ -136,19 +138,28 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
 
     // Atualiza o histórico global
     final String globalRaw = prefs.getString(_globalHistoryKey) ?? '{}';
-    final Map<String, dynamic> globalHistory = json.decode(globalRaw);
+    final Map<String, dynamic> globalHistory = Map<String, dynamic>.from(
+      json.decode(globalRaw),
+    );
     globalHistory[account] = (globalHistory[account] ?? 0) + 1;
     await prefs.setString(_globalHistoryKey, json.encode(globalHistory));
 
     // Atualiza o histórico por comerciante
     final String merchantRaw = prefs.getString(_merchantHistoryKey) ?? '{}';
-    final Map<String, dynamic> merchantHistory = json.decode(merchantRaw);
-    if (!merchantHistory.containsKey(merchantId)) {
-      merchantHistory[merchantId] = {};
-    }
+    final Map<String, dynamic> merchantHistory = Map<String, dynamic>.from(
+      json.decode(merchantRaw),
+    );
+
+    // Força a conversão segura do histórico do comerciante específico para Map<String, dynamic>
     final Map<String, dynamic> thisMerchantHistory =
-        merchantHistory[merchantId];
+        merchantHistory.containsKey(merchantId) &&
+            merchantHistory[merchantId] is Map
+        ? Map<String, dynamic>.from(merchantHistory[merchantId] as Map)
+        : {};
+
     thisMerchantHistory[account] = (thisMerchantHistory[account] ?? 0) + 1;
+    merchantHistory[merchantId] = thisMerchantHistory;
+
     await prefs.setString(_merchantHistoryKey, json.encode(merchantHistory));
   }
 
@@ -545,8 +556,6 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       ),
                     ),
                   ),
-
-                  // --- Cartão de conta interativo ---
                   Card(
                     child: InkWell(
                       onTap: _showAccountBottomSheet,
@@ -569,7 +578,6 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       ),
                     ),
                   ),
-
                   Card(
                     child: ListTile(
                       leading: const Icon(Icons.euro, size: 40),

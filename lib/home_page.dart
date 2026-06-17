@@ -10,6 +10,7 @@ import 'file_scanner_service.dart';
 import 'confirmation_page.dart';
 import 'fatura_model.dart';
 import 'category_management_service.dart';
+import 'account_management_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,6 +22,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final CategoryManagementService _categoryService =
       CategoryManagementService();
+  final AccountManagementService _accountService = AccountManagementService();
   late StreamSubscription _intentSubscription;
 
   @override
@@ -191,9 +193,18 @@ class _HomePageState extends State<HomePage> {
 
     try {
       final fatura = Fatura.fromQrCodeString(qrData);
+      final categories = await _categoryService.getCategories();
+      final accounts = await _accountService.getAccounts();
+
+      if (!context.mounted) return;
+
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => ConfirmationPage(fatura: fatura),
+          builder: (context) => ConfirmationPage(
+            fatura: fatura,
+            categories: categories,
+            accounts: accounts,
+          ),
         ),
       );
     } catch (e) {
