@@ -618,21 +618,25 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      icon: const Icon(Icons.save),
-                      label: const Text('Apenas guardar comerciante'),
-                      onPressed: _isProcessing ? null : _saveProfileOnly,
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: BorderSide(
-                          color: Theme.of(context).colorScheme.primary,
+
+                  if (_profile == null || _profile!.name == 'Desconhecido') ...[
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.save),
+                        label: const Text('Apenas guardar comerciante'),
+                        onPressed: _isProcessing ? null : _saveProfileOnly,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
+
                   Padding(
                     padding: EdgeInsets.only(
                       bottom: MediaQuery.of(context).viewPadding.bottom + 16.0,
