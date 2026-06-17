@@ -1,6 +1,8 @@
 // lib/confirmation_page.dart
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'fatura_model.dart';
 import 'profile_service.dart';
 import 'cashew_launcher.dart';
@@ -27,8 +29,13 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
   Map<String, List<String>> _allCategories = {};
   List<String> _allAccounts = [];
   String? _selectedAccount;
+  String? _suggestedAccount;
   bool _isLoading = true;
   bool _isProcessing = false;
+
+  // Chaves para persistência do histórico de predição
+  static const String _globalHistoryKey = 'ac_global_history';
+  static const String _merchantHistoryKey = 'ac_merchant_history';
 
   @override
   void initState() {
@@ -50,18 +57,61 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
       final loadedCategories = await _categoryService.getCategories();
       final loadedAccounts = await _accountService.getAccounts();
 
+      final prefs = await SharedPreferences.getInstance();
+
       if (mounted) {
         setState(() {
           _allCategories = loadedCategories;
-          _allAccounts = loadedAccounts;
           _profile =
               loadedProfile ??
               MerchantProfile(name: 'Desconhecido', category: '');
 
-          // Define uma conta padrão inicial se houver contas disponíveis
-          if (_allAccounts.isNotEmpty) {
-            _selectedAccount = _allAccounts.first;
+          // --- Algoritmo de predição inteligente de contas ---
+          List<String> accounts = List<String>.from(loadedAccounts);
+          final String globalRaw = prefs.getString(_globalHistoryKey) ?? '{}';
+          final String merchantRaw =
+              prefs.getString(_merchantHistoryKey) ?? '{}';
+
+          final Map<String, dynamic> globalHistory = json.decode(globalRaw);
+          final Map<String, dynamic> merchantHistory = json.decode(merchantRaw);
+
+          final String merchantId = widget.fatura.nifComerciante;
+          final Map<String, dynamic> thisMerchantHistory =
+              merchantHistory[merchantId] ?? {};
+
+          String? prediction;
+
+          // Regra 1: Mais utilizada para este comerciante específico
+          if (thisMerchantHistory.isNotEmpty) {
+            prediction = thisMerchantHistory.entries
+                .reduce((a, b) => (a.value as int) > (b.value as int) ? a : b)
+                .key;
           }
+
+          // Regra 2: Mais utilizada globalmente (Fallback)
+          if ((prediction == null || !accounts.contains(prediction)) &&
+              globalHistory.isNotEmpty) {
+            prediction = globalHistory.entries
+                .reduce((a, b) => (a.value as int) > (b.value as int) ? a : b)
+                .key;
+          }
+
+          // Regra 3: Primeira da lista (Fallback final)
+          if (prediction == null || !accounts.contains(prediction)) {
+            prediction = accounts.isNotEmpty ? accounts.first : null;
+          }
+
+          // Ordenação da lista: coloca as mais usadas globalmente no topo
+          accounts.sort((a, b) {
+            final int countA = globalHistory[a] ?? 0;
+            final int countB = globalHistory[b] ?? 0;
+            return countB.compareTo(countA);
+          });
+
+          _allAccounts = accounts;
+          _suggestedAccount = prediction;
+          _selectedAccount =
+              prediction; // Define a conta preditiva como selecionada por padrão
         });
       }
     } catch (e) {
@@ -79,6 +129,29 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
     }
   }
 
+  /// Regista a utilização da conta para refinar as futuras sugestões
+  Future<void> _incrementAccountUsage(String account) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String merchantId = widget.fatura.nifComerciante;
+
+    // Atualiza o histórico global
+    final String globalRaw = prefs.getString(_globalHistoryKey) ?? '{}';
+    final Map<String, dynamic> globalHistory = json.decode(globalRaw);
+    globalHistory[account] = (globalHistory[account] ?? 0) + 1;
+    await prefs.setString(_globalHistoryKey, json.encode(globalHistory));
+
+    // Atualiza o histórico por comerciante
+    final String merchantRaw = prefs.getString(_merchantHistoryKey) ?? '{}';
+    final Map<String, dynamic> merchantHistory = json.decode(merchantRaw);
+    if (!merchantHistory.containsKey(merchantId)) {
+      merchantHistory[merchantId] = {};
+    }
+    final Map<String, dynamic> thisMerchantHistory =
+        merchantHistory[merchantId];
+    thisMerchantHistory[account] = (thisMerchantHistory[account] ?? 0) + 1;
+    await prefs.setString(_merchantHistoryKey, json.encode(merchantHistory));
+  }
+
   // --- Regista no Cashew e guarda o perfil ---
   Future<void> _registerTransaction() async {
     if (_profile == null) return;
@@ -88,6 +161,11 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
     });
 
     try {
+      // Guarda a utilização da conta para inteligência futura antes de lançar o Cashew
+      if (_selectedAccount != null) {
+        await _incrementAccountUsage(_selectedAccount!);
+      }
+
       // Guarda o perfil atualizado
       await _profileService.saveProfile(
         widget.fatura.nifComerciante,
@@ -152,6 +230,114 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
     }
   }
 
+  /// Desenrola o painel inferior para seleção rápida da conta
+  void _showAccountBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (BuildContext bc) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                  child: Text(
+                    'Selecionar conta de destino',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const Divider(),
+                Flexible(
+                  child: _allAccounts.isEmpty
+                      ? const Padding(
+                          padding: EdgeInsets.all(20.0),
+                          child: Text(
+                            'Nenhuma conta disponível. Configure no Cashew.',
+                          ),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: _allAccounts.length,
+                          itemBuilder: (context, index) {
+                            final account = _allAccounts[index];
+                            final isSuggested = account == _suggestedAccount;
+                            final isSelected = account == _selectedAccount;
+
+                            return ListTile(
+                              leading: Icon(
+                                isSuggested
+                                    ? Icons.stars
+                                    : Icons.account_balance_wallet,
+                                color: isSuggested
+                                    ? Colors.amber[700]
+                                    : Colors.blueGrey,
+                              ),
+                              title: Text(
+                                account,
+                                style: TextStyle(
+                                  fontWeight: isSuggested || isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                              trailing: isSelected
+                                  ? const Icon(
+                                      Icons.check_circle,
+                                      color: Colors.green,
+                                    )
+                                  : (isSuggested
+                                        ? Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.amber[100],
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: Text(
+                                              'Sugerida',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.orange[800],
+                                              ),
+                                            ),
+                                          )
+                                        : null),
+                              onTap: () {
+                                setState(() {
+                                  _selectedAccount = account;
+                                });
+                                Navigator.of(context).pop();
+                              },
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _showEditDialog() {
     if (_profile == null) return;
 
@@ -191,7 +377,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                 _allCategories[dialogSelectedCategory] ?? [];
 
             return AlertDialog(
-              title: const Text('Editar perfil do comerciante'),
+              title: const Text('Editar comerciante'),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -299,8 +485,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                           category: dialogSelectedCategory ?? '',
                           subcategory: dialogSelectedSubcategory,
                         );
-                        _selectedAccount =
-                            dialogSelectedAccount; // <-- Atualiza a conta selecionada na view principal
+                        _selectedAccount = dialogSelectedAccount;
                       });
                       Navigator.of(context).pop();
                     }
@@ -360,20 +545,31 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       ),
                     ),
                   ),
+
+                  // --- Cartão de conta interativo ---
                   Card(
-                    child: ListTile(
-                      leading: const Icon(
-                        Icons.account_balance_wallet,
-                        size: 40,
-                      ),
-                      title: const Text('Conta de destino'),
-                      subtitle: Text(
-                        _selectedAccount ??
-                            'Não definida (Selecionar no Cashew)',
-                        style: const TextStyle(fontSize: 16),
+                    child: InkWell(
+                      onTap: _showAccountBottomSheet,
+                      borderRadius: BorderRadius.circular(12),
+                      child: ListTile(
+                        leading: const Icon(
+                          Icons.account_balance_wallet,
+                          size: 40,
+                        ),
+                        title: const Text('Conta de destino'),
+                        subtitle: Text(
+                          _selectedAccount ??
+                              'Não definida (Selecionar no Cashew)',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        trailing: const Icon(
+                          Icons.arrow_drop_down,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
                   ),
+
                   Card(
                     child: ListTile(
                       leading: const Icon(Icons.euro, size: 40),
