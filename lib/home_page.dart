@@ -89,7 +89,6 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    // 1. Processar Categorias
     Map<String, List<String>> categories = {};
     if (data.containsKey('categories') && data['categories'] is Map) {
       final rawCategories = data['categories'] as Map<String, dynamic>;
@@ -99,10 +98,10 @@ class _HomePageState extends State<HomePage> {
       });
     }
 
-    // 2. Processar Contas
-    Map<String, dynamic> accounts = {};
-    if (data.containsKey('accounts') && data['accounts'] is Map) {
-      accounts = data['accounts'] as Map<String, dynamic>;
+    List<String> accounts = [];
+    if (data.containsKey('accounts') && data['accounts'] is List) {
+      final rawAccounts = data['accounts'] as List<dynamic>;
+      accounts = rawAccounts.whereType<String>().toList();
     }
 
     if (categories.isEmpty && accounts.isEmpty) {
@@ -120,7 +119,7 @@ class _HomePageState extends State<HomePage> {
 
   void _showImportDialog(
     Map<String, List<String>> categories,
-    Map<String, dynamic> accounts,
+    List<String> accounts,
   ) {
     // Constrói a mensagem informativa do diálogo baseada no que foi encontrado
     final List<String> infoLines = [];
@@ -131,7 +130,7 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Importar dados do Cashew'),
+        title: const Text('Importar dados'),
         content: Text(
           'Foram encontradas $contentMessage.\n\n'
           'Isto vai substituir os dados atuais pelos novos. Continuar?',
@@ -145,7 +144,6 @@ class _HomePageState extends State<HomePage> {
             onPressed: () async {
               Navigator.of(context).pop();
 
-              // Alinha a persistência com o método unificado do teu serviço
               await _categoryService.saveCategoriesAndAccounts(
                 categories: categories,
                 accounts: accounts,

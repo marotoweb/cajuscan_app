@@ -6,7 +6,7 @@ class CategoryManagementService {
   static const String _categoriesKey = 'cashew_categories';
   static const String _accountsKey = 'cashew_accounts';
 
-  // Agora carrega os padrões automaticamente na primeira execução.
+  // Carrega os padrões automaticamente na primeira execução.
   Future<Map<String, List<String>>> getCategories() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonString = prefs.getString(_categoriesKey);
@@ -94,25 +94,21 @@ class CategoryManagementService {
     await prefs.setString(_categoriesKey, jsonString);
   }
 
-  /// Salva apenas as contas na chave correspondente
-  Future<void> saveAccounts(Map<String, dynamic> accounts) async {
+  Future<void> saveAccounts(List<String> accounts) async {
     final prefs = await SharedPreferences.getInstance();
-    final jsonString = json.encode(accounts);
-    await prefs.setString(_accountsKey, jsonString);
+    await prefs.setStringList(_accountsKey, accounts);
   }
 
-  /// Grava categorias e contas em simultâneo
-  /// Resolve o erro 'undefined_method' detetado na HomePage
   Future<void> saveCategoriesAndAccounts({
     required Map<String, List<String>> categories,
-    required Map<String, dynamic> accounts,
+    required List<String> accounts,
   }) async {
-    if (categories.isNotEmpty) {
-      await saveCategories(categories);
-    }
-    if (accounts.isNotEmpty) {
-      await saveAccounts(accounts);
-    }
+    final prefs = await SharedPreferences.getInstance();
+
+    final String categoriesJson = json.encode(categories);
+    await prefs.setString('cashew_categories', categoriesJson);
+
+    await prefs.setStringList('cashew_accounts', accounts);
   }
 
   Future<void> addCategory(String categoryName) async {
