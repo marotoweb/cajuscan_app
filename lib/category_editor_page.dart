@@ -256,13 +256,13 @@ class _CategoryEditorPageState extends State<CategoryEditorPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.edit_outlined),
+                        icon: const Icon(Icons.edit, color: Colors.blue),
                         tooltip: 'Renomear',
                         onPressed: () =>
                             _showAddDialog(categoryToEdit: category),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete_outline),
+                        icon: const Icon(Icons.delete, color: Colors.red),
                         tooltip: 'Eliminar',
                         onPressed: () => _deleteCategory(category),
                       ),

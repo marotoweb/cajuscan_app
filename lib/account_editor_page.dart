@@ -162,15 +162,12 @@ class _AccountEditorPageState extends State<AccountEditorPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.edit_outlined),
+                        icon: const Icon(Icons.edit, color: Colors.blue),
                         onPressed: () =>
                             _showAccountDialog(oldName: account, index: index),
                       ),
                       IconButton(
-                        icon: const Icon(
-                          Icons.delete_outline,
-                          color: Colors.redAccent,
-                        ),
+                        icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () => _deleteAccount(index),
                       ),
                     ],
