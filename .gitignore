@@ -53,3 +53,5 @@ app.*.map.json
 # Android signing keystore
 *.jks
 android/key.properties
+devtools_options.yaml
+diff.txt

@@ -251,19 +251,15 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 const Divider(),
                 ListTile(
-                  leading: const Icon(Icons.account_balance_wallet),
-                  title: const Text('Gerir contas'),
+                  leading: const Icon(Icons.store),
+                  title: const Text('Gerir comerciantes'),
                   subtitle: const Text(
-                    'Adicionar, editar ou eliminar contas de destino do Cashew',
+                    'Ver e editar pefil de comerciantes guardados',
                   ),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (c) => const AccountEditorPage(),
-                      ),
-                    );
-                  },
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (c) => const ManagementPage()),
+                  ),
                 ),
                 ListTile(
                   leading: const Icon(Icons.category),
@@ -271,6 +267,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   subtitle: const Text(
                     'Adicionar, editar ou eliminar categorias e subcategorias do Cashew',
                   ),
+                  trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (c) => const CategoryEditorPage(),
@@ -278,13 +275,16 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.store),
-                  title: const Text('Gerir comerciantes'),
+                  leading: const Icon(Icons.account_balance_wallet),
+                  title: const Text('Gerir contas'),
                   subtitle: const Text(
-                    'Ver e editar pefil de comerciantes guardados',
+                    'Adicionar, editar ou eliminar contas de destino do Cashew',
                   ),
+                  trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (c) => const ManagementPage()),
+                    MaterialPageRoute(
+                      builder: (c) => const AccountEditorPage(),
+                    ),
                   ),
                 ),
                 const Divider(),

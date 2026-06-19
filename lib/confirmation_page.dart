@@ -241,6 +241,237 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
     }
   }
 
+  /// Abre diálogo simples e focado para editar apenas o nome do comerciante
+  void _showEditMerchantNameDialog() {
+    if (_profile == null) return;
+
+    final localNameController = TextEditingController(
+      text: _profile!.name == 'Desconhecido' ? '' : _profile!.name,
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Nome do comerciante'),
+          content: TextField(
+            controller: localNameController,
+            decoration: const InputDecoration(
+              labelText: 'Nome do estabelecimento',
+              hintText: 'Ex: Continente, Pingo Doce',
+            ),
+            autofocus: true,
+            textCapitalization: TextCapitalization.words,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (localNameController.text.trim().isNotEmpty) {
+                  setState(() {
+                    _profile = MerchantProfile(
+                      name: localNameController.text.trim(),
+                      category: _profile!.category,
+                      subcategory: _profile!.subcategory,
+                    );
+                  });
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text('Confirmar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Desenrola o painel inferior para seleção rápida da categoria e subcategoria
+  void _showCategoryBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      isScrollControlled: true,
+      builder: (BuildContext bc) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[400],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 4,
+                      ),
+                      child: Text(
+                        'Selecionar categoria',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const Divider(),
+                    Flexible(
+                      child: _allCategories.isEmpty
+                          ? const Padding(
+                              padding: EdgeInsets.all(20.0),
+                              child: Text(
+                                'Nenhuma categoria disponível. Configure no Cashew.',
+                              ),
+                            )
+                          : ListView.builder(
+                              controller: scrollController,
+                              shrinkWrap: true,
+                              itemCount: _allCategories.keys.length,
+                              itemBuilder: (context, index) {
+                                final category = _allCategories.keys.elementAt(
+                                  index,
+                                );
+                                final subcategories =
+                                    _allCategories[category] ?? [];
+                                final isSelectedCategory =
+                                    _profile?.category == category;
+
+                                if (subcategories.isEmpty) {
+                                  return ListTile(
+                                    leading: Icon(
+                                      Icons.category_outlined,
+                                      color: isSelectedCategory
+                                          ? Colors.green
+                                          : Colors.blueGrey,
+                                    ),
+                                    title: Text(
+                                      category,
+                                      style: TextStyle(
+                                        fontWeight: isSelectedCategory
+                                            ? FontWeight.w600
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                    trailing: isSelectedCategory
+                                        ? const Icon(
+                                            Icons.check_circle,
+                                            color: Colors.green,
+                                          )
+                                        : null,
+                                    onTap: () {
+                                      setState(() {
+                                        _profile = MerchantProfile(
+                                          name:
+                                              _profile?.name ?? 'Desconhecido',
+                                          category: category,
+                                          subcategory: null,
+                                        );
+                                      });
+                                      Navigator.of(context).pop();
+                                    },
+                                  );
+                                }
+
+                                return ExpansionTile(
+                                  leading: Icon(
+                                    Icons.category,
+                                    color: isSelectedCategory
+                                        ? Colors.green
+                                        : Colors.blueGrey,
+                                  ),
+                                  title: Text(
+                                    category,
+                                    style: TextStyle(
+                                      fontWeight: isSelectedCategory
+                                          ? FontWeight.w600
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                  initiallyExpanded: isSelectedCategory,
+                                  children: subcategories.map((sub) {
+                                    final isSelectedSub =
+                                        isSelectedCategory &&
+                                        _profile?.subcategory == sub;
+                                    return ListTile(
+                                      contentPadding: const EdgeInsets.fromLTRB(
+                                        56,
+                                        0,
+                                        20,
+                                        0,
+                                      ),
+                                      leading: Icon(
+                                        Icons.subdirectory_arrow_right,
+                                        size: 18,
+                                        color: isSelectedSub
+                                            ? Colors.green
+                                            : Colors.grey,
+                                      ),
+                                      title: Text(
+                                        sub,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: isSelectedSub
+                                              ? Colors.green
+                                              : null,
+                                          fontWeight: isSelectedSub
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                        ),
+                                      ),
+                                      trailing: isSelectedSub
+                                          ? const Icon(
+                                              Icons.check_circle,
+                                              color: Colors.green,
+                                              size: 18,
+                                            )
+                                          : null,
+                                      onTap: () {
+                                        setState(() {
+                                          _profile = MerchantProfile(
+                                            name:
+                                                _profile?.name ??
+                                                'Desconhecido',
+                                            category: category,
+                                            subcategory: sub,
+                                          );
+                                        });
+                                        Navigator.of(context).pop();
+                                      },
+                                    );
+                                  }).toList(),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   /// Desenrola o painel inferior para seleção rápida da conta
   void _showAccountBottomSheet() {
     showModalBottomSheet(
@@ -532,27 +763,44 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.store, size: 40),
-                      title: Text(
-                        _profile?.name ?? 'Carregando...',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                    child: InkWell(
+                      onTap: _isLoading ? null : _showEditMerchantNameDialog,
+                      borderRadius: BorderRadius.circular(12),
+                      child: ListTile(
+                        leading: const Icon(Icons.store, size: 40),
+                        title: Text(
+                          _profile?.name ?? 'Carregando...',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        subtitle: Text('NIF: ${widget.fatura.nifComerciante}'),
+                        trailing: const Icon(
+                          Icons.edit,
+                          size: 18,
+                          color: Colors.grey,
                         ),
                       ),
-                      subtitle: Text('NIF: ${widget.fatura.nifComerciante}'),
                     ),
                   ),
                   Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.category, size: 40),
-                      title: const Text('Categoria'),
-                      subtitle: Text(
-                        _profile?.category.isEmpty ?? true
-                            ? 'Não definida'
-                            : '${_profile!.category}${_profile!.subcategory != null ? ' > ${_profile!.subcategory}' : ''}',
-                        style: const TextStyle(fontSize: 16),
+                    child: InkWell(
+                      onTap: _isLoading ? null : _showCategoryBottomSheet,
+                      borderRadius: BorderRadius.circular(12),
+                      child: ListTile(
+                        leading: const Icon(Icons.category, size: 40),
+                        title: const Text('Categoria'),
+                        subtitle: Text(
+                          _profile?.category.isEmpty ?? true
+                              ? 'Não definida'
+                              : '${_profile!.category}${_profile!.subcategory != null ? ' > ${_profile!.subcategory}' : ''}',
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        trailing: const Icon(
+                          Icons.arrow_drop_down,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
                   ),
@@ -618,7 +866,6 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       ),
                     ),
                   ),
-
                   if (_profile == null || _profile!.name == 'Desconhecido') ...[
                     const SizedBox(height: 12),
                     SizedBox(
@@ -636,7 +883,6 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       ),
                     ),
                   ],
-
                   Padding(
                     padding: EdgeInsets.only(
                       bottom: MediaQuery.of(context).viewPadding.bottom + 16.0,
