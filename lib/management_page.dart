@@ -16,27 +16,90 @@ class _ManagementPageState extends State<ManagementPage> {
   final ProfileService _profileService = ProfileService();
   final CategoryManagementService _categoryService =
       CategoryManagementService();
+  final TextEditingController _searchController = TextEditingController();
 
-  late Future<Map<String, MerchantProfile>> _profilesFuture;
+  Map<String, MerchantProfile> _allProfiles = {};
+  List<String> _filteredNifs = [];
   Map<String, List<String>> _allCategories = {};
+
+  bool _isLoading = true;
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _searchController.addListener(_onSearchChanged);
   }
 
-  void _loadData() {
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadData() async {
+    if (!mounted) return;
     setState(() {
-      _profilesFuture = _profileService.getAllProfiles();
-      _categoryService.getCategories().then((cats) {
-        if (mounted) {
-          setState(() {
-            _allCategories = cats;
-          });
-        }
-      });
+      _isLoading = true;
     });
+
+    try {
+      final profiles = await _profileService.getAllProfiles();
+      final cats = await _categoryService.getCategories();
+
+      if (mounted) {
+        setState(() {
+          _allProfiles = profiles;
+          _allCategories = cats;
+          _applyFilter();
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao carregar dados: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _onSearchChanged() {
+    setState(() {
+      _searchQuery = _searchController.text.toLowerCase();
+      _applyFilter();
+    });
+  }
+
+  void _applyFilter() {
+    // Recolhe e ordena todos os NIFs com base no nome do comerciante
+    final sortedNifs = _allProfiles.keys.toList()
+      ..sort((a, b) => _allProfiles[a]!.name.compareTo(_allProfiles[b]!.name));
+
+    if (_searchQuery.isEmpty) {
+      _filteredNifs = sortedNifs;
+    }
+    {
+      _filteredNifs = sortedNifs.where((nif) {
+        final profile = _allProfiles[nif]!;
+        final name = profile.name.toLowerCase();
+        final category = profile.category.toLowerCase();
+        final subcategory = (profile.subcategory ?? '').toLowerCase();
+        final nifClean = nif.toLowerCase();
+
+        return name.contains(_searchQuery) ||
+            nifClean.contains(_searchQuery) ||
+            category.contains(_searchQuery) ||
+            subcategory.contains(_searchQuery);
+      }).toList();
+    }
   }
 
   Future<void> _deleteProfile(String nif) async {
@@ -64,8 +127,6 @@ class _ManagementPageState extends State<ManagementPage> {
 
     if (shouldDelete == true) {
       await _profileService.deleteProfile(nif);
-
-      if (!mounted) return;
       _loadData();
     }
   }
@@ -265,11 +326,7 @@ class _ManagementPageState extends State<ManagementPage> {
                       return;
                     }
 
-                    final existingProfiles = await _profilesFuture;
-
-                    if (!context.mounted) return;
-
-                    if (existingProfiles.containsKey(nif)) {
+                    if (_allProfiles.containsKey(nif)) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Erro: Este NIF já existe.'),
@@ -309,73 +366,97 @@ class _ManagementPageState extends State<ManagementPage> {
         tooltip: 'Adicionar comerciante',
         child: const Icon(Icons.add),
       ),
-      body: FutureBuilder<Map<String, MerchantProfile>>(
-        future: _profilesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(
-              child: Text('Erro ao carregar perfis: ${snapshot.error}'),
-            );
-          }
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(24.0),
-                child: Text(
-                  'Nenhum comerciante guardado.\n\nClique no botão "+" para adicionar o seu primeiro comerciante manualmente.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-              ),
-            );
-          }
-
-          final profiles = snapshot.data!;
-          final nifs = profiles.keys.toList()
-            ..sort((a, b) => profiles[a]!.name.compareTo(profiles[b]!.name));
-
-          return ListView.builder(
-            padding: const EdgeInsets.only(bottom: 120.0),
-            itemCount: nifs.length,
-            itemBuilder: (context, index) {
-              final nif = nifs[index];
-              final profile = profiles[nif]!;
-              final subtitle =
-                  'NIF: $nif\nCategoria: ${profile.category.isEmpty ? 'N/A' : profile.category}${profile.subcategory != null ? ' > ${profile.subcategory}' : ''}';
-
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: ListTile(
-                  title: Text(
-                    profile.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(subtitle),
-                  isThreeLine: true,
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        tooltip: 'Editar',
-                        onPressed: () => _showEditDialog(nif, profile),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Pesquisar por nome, NIF ou categoria...',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () => _searchController.clear(),
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        tooltip: 'Eliminar',
-                        onPressed: () => _deleteProfile(nif),
-                      ),
-                    ],
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    ),
                   ),
                 ),
-              );
-            },
-          );
-        },
-      ),
+                Expanded(
+                  child: _filteredNifs.isEmpty
+                      ? const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(24.0),
+                            child: Text(
+                              'Nenhum comerciante encontrado.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.only(bottom: 120.0),
+                          itemCount: _filteredNifs.length,
+                          itemBuilder: (context, index) {
+                            final nif = _filteredNifs[index];
+                            final profile = _allProfiles[nif]!;
+                            final subtitle =
+                                'NIF: $nif\nCategoria: ${profile.category.isEmpty ? 'N/A' : profile.category}${profile.subcategory != null ? ' > ${profile.subcategory}' : ''}';
+
+                            return Card(
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              child: ListTile(
+                                title: Text(
+                                  profile.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Text(subtitle),
+                                isThreeLine: true,
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.edit,
+                                        color: Colors.blue,
+                                      ),
+                                      tooltip: 'Editar',
+                                      onPressed: () =>
+                                          _showEditDialog(nif, profile),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete,
+                                        color: Colors.red,
+                                      ),
+                                      tooltip: 'Eliminar',
+                                      onPressed: () => _deleteProfile(nif),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
     );
   }
 }
