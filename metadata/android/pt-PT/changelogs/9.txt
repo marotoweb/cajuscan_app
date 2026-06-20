@@ -1,0 +1,5 @@
+- Adicionado o motor de predição inteligente de contas com sugestões baseadas no histórico local.
+- Nova interface de confirmação baseada em cartões interativos e painéis inferiores (bottom sheets).
+- Adicionada barra de pesquisa dinâmica na listagem de gestão de comerciantes.
+- Criação de página dedicada para gestão de contas e suporte para importação via share intent diretamente do Cashew ou ficheiro local.
+- Atualização do sistema de backup (.json) para incluir as contas e o histórico do motor de predição.

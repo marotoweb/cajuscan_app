@@ -1,0 +1,5 @@
+- Added the smart account prediction engine with suggestions based on local history.
+- New confirmation interface based on interactive cards and integrated bottom sheets.
+- Added a dynamic search bar to the merchant management list view.
+- Created a dedicated page for account management and added support for direct imports via Cashew share intent or local file.
+- Updated the backup system (.json) to include accounts and prediction engine history.
