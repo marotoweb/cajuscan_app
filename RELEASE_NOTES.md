@@ -1,3 +1,19 @@
+## 1.0.8
+# 🚀 Novidades da Versão 1.0.8
+
+### ✨ Novidades
+- **Motor de predição inteligente de contas:** A aplicação passa a sugerir automaticamente a conta de destino mais provável ao ler uma fatura. O algoritmo analisa o histórico local em dupla camada: primeiro tenta a conta mais frequente para aquele NIF e, se for um comerciante novo, recorre à conta mais utilizada globalmente, ordenando o menu de forma dinâmica.
+- **Interface de confirmação redesenhada:** O ecrã de revisão de dados foi atualizado para uma navegação consistente baseada em cartões interativos. O toque no comerciante abre um diálogo de edição rápida do nome, enquanto a categoria e a conta abrem painéis inferiores (*bottom sheets*) integrados para uma seleção limpa.
+- **Barra de pesquisa nos comerciantes:** Adicionada uma caixa de pesquisa dinâmica no topo da listagem de gestão. Permite filtrar e encontrar instantaneamente estabelecimentos guardados por nome, NIF, categoria ou subcategoria em tempo real.
+- **Gestão de contas dedicada:** Criação de uma área isolada nas definições para adicionar, editar ou eliminar as contas de destino de forma independente.
+- **Importação de contas do Cashew:** Suporte expandido no *share sheet* para receber também a estrutura de contas de destino diretamente através da funcionalidade de partilha do Cashew.
+
+### 🛠️ Melhorias e Refatoração
+- **Ciclo de vida optimizado:** Transição de componentes estruturais da listagem para `StatefulWidget`, garantindo que os estados de filtragem e pesquisa corram de forma fluida na interface sem desencadear leituras redundantes de ficheiro.
+- **Segurança assíncrona:** Implementação de validações robustas com `context.mounted` em fluxos assíncronos de diálogos e alertas de eliminação.
+- **Ajustes visuais:** Alinhamento geral de ícones, introdução de setas indicadoras de navegação (`Icons.chevron_right`) nas opções e inclusão de subtítulos informativos nas definições.
+- **Backup alargado:** O ficheiro de backup (`.json`) foi atualizado para salvaguardar de forma unificada os perfis de comerciantes, categorias, contas e todo o histórico de predição.
+
 ## 1.0.7
 # 🚀 Novidades da Versão 1.0.7
 
