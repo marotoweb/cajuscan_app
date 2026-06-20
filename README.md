@@ -43,28 +43,28 @@ Apresentação visual das principais funcionalidades da aplicação CajuScan.
 
 ## ✨ Funcionalidades principais
 
-*   **Leitura de código QR de faturas:** Utiliza a câmara do telemóvel para digitalizar e processar instantaneamente os c+odigos QR (ATCUD) das faturas emitidas em Portugal.
+* **Leitura de código QR de faturas:** Utiliza a câmara do telemóvel para digitalizar e processar instantaneamente os c+odigos QR (ATCUD) das faturas emitidas em Portugal.
 * **Importação de ficheiros:** Permite ler o código QR diretamente de ficheiros **PDF** ou **imagens** da galeria, facilitando o registo de faturas digitais recebidas por email.
-*   **Integração com Cashew:** Envia os dados da fatura (valor, data, NIF do comerciante) diretamente para a aplicação Cashew, pré-preenchendo uma nova transação.
-*   **Gestão inteligente de comerciantes:**
-    *   Guarda automaticamente o NIF de cada comerciante.
-    *   Permite associar um nome personalizado (ex: "Comerciante XPTO") e uma categoria/subcategoria padrão a cada NIF.
-    *   Na leitura seguinte de uma fatura do mesmo comerciante, sugere automaticamente o nome e a categoria guardados.
-*   **Gestão de categorias:**
-    *   Sistema completo para criar, editar e eliminar categorias e subcategorias de despesa.
-    *   Permite restaurar uma lista de categorias padrão a qualquer momento.
-    *   Importa categorias directamente do Cashew via partilha, ou manualmente a partir de um ficheiro JSON/TXT.
-*   **Flexibilidade no registo:**
-    *   Opção para registar a transação diretamente no Cashew (sem confirmação).
-    *   Opção para abrir os dados no Cashew para revisão antes de guardar (requer confirmação).
-    *   Possibilidade de apenas guardar um novo comerciante a partir de um código QR, sem criar uma transação.
-*   **Backup e restauro:**
-    *   Funcionalidade para exportar todos os dados da aplicação (perfis de comerciantes e categorias) para um ficheiro de backup (`.json`).
-    *   Permite importar dados a partir de um ficheiro de backup, facilitando a migração entre dispositivos.
-*   **Interface intuitiva:**
-    *   Scanner de câmara com uma sobreposição clara para facilitar o alinhamento do QR Code.
-    *   Design limpo e focado na simplicidade de uso.
-*   **Privacidade e segurança:** Aplicação assinada digitalmente e preparada para *builds* reprodutíveis (**Reproducible Builds**).
+* **Integração com Cashew:** Envia os dados da fatura (valor, data, NIF do comerciante) diretamente para a aplicação Cashew, pré-preenchendo uma nova transação.
+* **Motor de Predição de Contas Dinâmico:** Algoritmo inteligente que analisa o histórico local para sugerir a conta de destino mais provável. Utiliza uma lógica de dupla camada: associa a conta mais frequente para aquele comerciante e recorre à conta mais utilizada globalmente como alternativa, ordenando o menu com base nos seus hábitos.
+* **Interface de confirmação moderna:** O ecrã de revisão foi redesenhado para uma navegação consistente baseada em cartões interativos. O toque no comerciante abre um diálogo de edição rápida do nome, enquanto a categoria e a conta abrem painéis inferiores (*bottom sheets*) integrados para uma seleção rápida e limpa.
+* **Gestão inteligente de comerciantes:**
+    * Guarda automaticamente o NIF de cada comerciante.
+    * Permite associar um nome personalizado (ex: "Comerciante XPTO") e uma categoria/subcategoria padrão a cada NIF.
+    * Na leitura seguinte de uma fatura do mesmo comerciante, sugere automaticamente o nome e a categoria guardados.
+    * Barra de pesquisa dinâmica na listagem de comerciantes que permite filtrar instantaneamente por nome, NIF, categoria ou subcategoria.
+* **Gestão de categorias e contas:**
+    * Áreas dedicadas nas definições para adicionar, editar ou eliminar categorias, subcategorias e contas de destino de forma isolada.
+    * Permite restaurar uma lista de categorias padrão a qualquer momento.
+    * Importa estruturas de categorias e contas de destino diretamente do Cashew através da funcionalidade de partilha do sistema (*share intent*), ou manualmente a partir de ficheiros estruturados em formato JSON/TXT.
+* **Flexibilidade no registo:**
+    * Opção para registar a transação diretamente no Cashew (sem confirmação).
+    * Opção para abrir os dados no Cashew para revisão antes de guardar (requer confirmação).
+    * Possibilidade de apenas guardar o perfil de um novo comerciante a partir do código QR, sem ser necessário gerar uma transação.
+* **Backup e restauro:** Funcionalidade para exportar e importar todos os dados da aplicação (perfis de comerciantes, categorias, contas e histórico de predição) através de um único ficheiro estruturado em formato `.json`, facilitando a migração entre dispositivos.* **Interface intuitiva:**
+    * Scanner de câmara com uma sobreposição clara para facilitar o alinhamento do QR Code.
+    * Design limpo e focado na simplicidade de uso.
+* **Privacidade e Segurança:** Aplicação inteiramente de código aberto (FOSS) com processamento local e offline, sem telemetria ou servidores externos. Aplicação assinada digitalmente e preparada para compilações reprodutíveis (**Reproducible Builds**).
 
 ---
 
