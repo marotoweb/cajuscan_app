@@ -29,21 +29,26 @@ O objetivo é poupar tempo e reduzir erros no preenchimento de transações do d
 Apresentação visual das principais funcionalidades da aplicação CajuScan.
 
 <p align="center">
-  <img src="screenshots/Screenshot_1.png" width="200" alt="Página Inicial">
-  <img src="screenshots/Screenshot_2.png" width="200" alt="Página de Digitalização">
-  <img src="screenshots/Screenshot_3.png" width="200" alt="Página de Confirmação">
+  <img src="screenshots/1.png" width="200" alt="Registo de despessas">
+  <img src="screenshots/2.png" width="200" alt="Digitalização">
+  <img src="screenshots/3.png" width="200" alt="Confirmar despesa">
 </p>
 <p align="center">
-  <img src="screenshots/Screenshot_4.png" width="200" alt="Gestão de Comerciantes">
-  <img src="screenshots/Screenshot_5.png" width="200" alt="Gestão de Categorias">
-  <img src="screenshots/Screenshot_6.png" width="200" alt="Página de Definições">
+  <img src="screenshots/4.png" width="200" alt="Conta de destino">
+  <img src="screenshots/5.png" width="200" alt="Conta de destino">
+  <img src="screenshots/6.png" width="200" alt="Definições">
+</p>
+<p align="center">
+  <img src="screenshots/7.png" width="200" alt="Comerciantes guardados">
+  <img src="screenshots/8.png" width="200" alt="Gerir categorias">
+  <img src="screenshots/9.png" width="200" alt="Editar comerciante">
 </p>
 
 ---
 
 ## ✨ Funcionalidades principais
 
-* **Leitura de código QR de faturas:** Utiliza a câmara do telemóvel para digitalizar e processar instantaneamente os c+odigos QR (ATCUD) das faturas emitidas em Portugal.
+* **Leitura de código QR de faturas:** Utiliza a câmara do telemóvel para digitalizar e processar instantaneamente os códigos QR (ATCUD) das faturas emitidas em Portugal.
 * **Importação de ficheiros:** Permite ler o código QR diretamente de ficheiros **PDF** ou **imagens** da galeria, facilitando o registo de faturas digitais recebidas por email.
 * **Integração com Cashew:** Envia os dados da fatura (valor, data, NIF do comerciante) diretamente para a aplicação Cashew, pré-preenchendo uma nova transação.
 * **Motor de Predição de Contas Dinâmico:** Algoritmo inteligente que analisa o histórico local para sugerir a conta de destino mais provável. Utiliza uma lógica de dupla camada: associa a conta mais frequente para aquele comerciante e recorre à conta mais utilizada globalmente como alternativa, ordenando o menu com base nos seus hábitos.
