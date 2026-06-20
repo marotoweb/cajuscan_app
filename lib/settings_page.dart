@@ -59,13 +59,14 @@ class _SettingsPageState extends State<SettingsPage> {
     bool isError = false;
 
     try {
-      await _backupService.exportData();
-      statusMessage = 'Exportação concluída com sucesso!';
+      final bool success = await _backupService.exportData();
+      if (success) {
+        statusMessage = 'Exportação concluída com sucesso!';
+      }
     } catch (e) {
-      statusMessage = e.toString();
+      statusMessage = e.toString().replaceAll('Exception: ', '');
       isError = true;
     } finally {
-      // Limpeza do estado de processamento
       if (mounted) {
         setState(() {
           _isProcessing = false;
@@ -87,9 +88,12 @@ class _SettingsPageState extends State<SettingsPage> {
     bool isError = false;
 
     try {
-      statusMessage = await _backupService.importData();
+      final bool success = await _backupService.importData();
+      if (success) {
+        statusMessage = 'Dados importados com sucesso!';
+      }
     } catch (e) {
-      statusMessage = e.toString();
+      statusMessage = e.toString().replaceAll('Exception: ', '');
       isError = true;
     } finally {
       if (mounted) {
@@ -254,7 +258,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   leading: const Icon(Icons.store),
                   title: const Text('Gerir comerciantes'),
                   subtitle: const Text(
-                    'Ver e editar pefil de comerciantes guardados',
+                    'Ver e editar perfil de comerciantes guardados',
                   ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => Navigator.of(context).push(

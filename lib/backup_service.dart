@@ -16,7 +16,7 @@ class BackupService {
   final AccountManagementService _accountService = AccountManagementService();
 
   // --- Exportação ---
-  Future<void> exportData() async {
+  Future<bool> exportData() async {
     try {
       // Recolher todos os dados
       final profiles = await _profileService.getAllProfiles();
@@ -40,18 +40,14 @@ class BackupService {
       );
 
       final filePath = await FlutterFileDialog.saveFile(params: params);
-
-      if (filePath == null) {
-        // O utilizador cancelou o diálogo de "Guardar como..."
-        // Não fazemos nada, é uma ação normal.
-      }
+      return filePath != null;
     } catch (e) {
       throw Exception('Erro ao exportar dados: $e');
     }
   }
 
   // --- Importação ---
-  Future<String> importData() async {
+  Future<bool> importData() async {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -59,7 +55,7 @@ class BackupService {
       );
 
       if (result == null || result.files.single.path == null) {
-        return 'Importação cancelada.';
+        return false;
       }
 
       final file = File(result.files.single.path!);
@@ -96,7 +92,7 @@ class BackupService {
         await _accountService.saveAccounts(accountsToSave);
       }
 
-      return 'Dados importados com sucesso!';
+      return true;
     } catch (e) {
       throw Exception('Erro ao importar dados: $e');
     }
