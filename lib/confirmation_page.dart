@@ -35,6 +35,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
   String? _suggestedAccount;
   bool _isLoading = true;
   bool _isProcessing = false;
+  bool _isMerchantStored = false;
 
   // Chaves para persistência do histórico de predição
   static const String _globalHistoryKey = 'ac_global_history';
@@ -66,6 +67,8 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
       if (mounted) {
         setState(() {
           _allCategories = loadedCategories;
+          _isMerchantStored = loadedProfile != null;
+
           _profile =
               loadedProfile ??
               MerchantProfile(name: 'Desconhecido', category: '');
@@ -208,6 +211,21 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
 
   Future<void> _saveProfileOnly() async {
     if (_profile == null) return;
+
+    // Validar se o utilizador está a tentar guardar com o nome padrão "Desconhecido"
+    if (_profile!.name.trim() == 'Desconhecido' ||
+        _profile!.name.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Por favor, defina o nome do comerciante antes de guardar.',
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isProcessing = true;
     });
@@ -217,11 +235,15 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
         _profile!,
       );
       if (mounted) {
+        setState(() {
+          _isMerchantStored = true;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               'Comerciante "${_profile!.name}" guardado com sucesso!',
             ),
+            backgroundColor: Colors.green,
           ),
         );
         Navigator.of(context).pop();
@@ -866,7 +888,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       ),
                     ),
                   ),
-                  if (_profile == null || _profile!.name == 'Desconhecido') ...[
+                  if (!_isMerchantStored) ...[
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
