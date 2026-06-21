@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SettingsService {
   static const String _confirmOnCashewKey = 'confirm_on_cashew';
   static const String _continuousScanKey = 'continuous_scan';
+  static const String _sendFiscalInfoKey = 'send_fiscal_info_to_cashew';
 
   /// Obtém a preferência de confirmação.
   /// Valor padrão alterado para 'true' para garantir segurança na primeira utilização.
@@ -28,5 +29,15 @@ class SettingsService {
   Future<void> setContinuousScan(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_continuousScanKey, value);
+  }
+
+  Future<bool> getSendFiscalInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_sendFiscalInfoKey) ?? false;
+  }
+
+  Future<void> setSendFiscalInfo(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_sendFiscalInfoKey, value);
   }
 }

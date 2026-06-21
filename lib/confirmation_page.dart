@@ -7,6 +7,7 @@ import 'fatura_model.dart';
 import 'profile_service.dart';
 import 'cashew_launcher.dart';
 import 'merchant_profile.dart';
+import 'settings_service.dart';
 
 class ConfirmationPage extends StatefulWidget {
   final Fatura fatura;
@@ -27,6 +28,7 @@ class ConfirmationPage extends StatefulWidget {
 class _ConfirmationPageState extends State<ConfirmationPage> {
   final ProfileService _profileService = ProfileService();
   final CashewLauncher _cashewLauncher = CashewLauncher();
+  final SettingsService _settingsService = SettingsService();
 
   MerchantProfile? _profile;
   Map<String, List<String>> _allCategories = {};
@@ -36,6 +38,9 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
   bool _isLoading = true;
   bool _isProcessing = false;
   bool _isMerchantStored = false;
+  bool _sendFiscalInfo = false;
+
+  late Fatura _localFatura;
 
   // Chaves para persistência do histórico de predição
   static const String _globalHistoryKey = 'ac_global_history';
@@ -44,6 +49,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
   @override
   void initState() {
     super.initState();
+    _localFatura = widget.fatura;
     _loadData();
   }
 
@@ -56,11 +62,12 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
 
     try {
       final loadedProfile = await _profileService.getProfile(
-        widget.fatura.nifComerciante,
+        _localFatura.nifComerciante,
       );
 
       final loadedCategories = widget.categories;
       final loadedAccounts = widget.accounts;
+      final sendFiscalValue = await _settingsService.getSendFiscalInfo();
 
       final prefs = await SharedPreferences.getInstance();
 
@@ -68,6 +75,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
         setState(() {
           _allCategories = loadedCategories;
           _isMerchantStored = loadedProfile != null;
+          _sendFiscalInfo = sendFiscalValue;
 
           _profile =
               loadedProfile ??
@@ -81,7 +89,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
           final Map<String, dynamic> globalHistory = json.decode(globalRaw);
           final Map<String, dynamic> merchantHistory = json.decode(merchantRaw);
 
-          final String merchantId = widget.fatura.nifComerciante;
+          final String merchantId = _localFatura.nifComerciante;
           final Map<String, dynamic> thisMerchantHistory =
               merchantHistory[merchantId] ?? {};
 
@@ -94,7 +102,6 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                 .key;
           }
 
-          // Regra 2: Mais utilizada globalmente (Fallback)
           if ((prediction == null || !accounts.contains(prediction)) &&
               globalHistory.isNotEmpty) {
             prediction = globalHistory.entries
@@ -137,7 +144,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
   /// Regista a utilização da conta para refinar as futuras sugestões
   Future<void> _incrementAccountUsage(String account) async {
     final prefs = await SharedPreferences.getInstance();
-    final String merchantId = widget.fatura.nifComerciante;
+    final String merchantId = _localFatura.nifComerciante;
 
     // Atualiza o histórico global
     final String globalRaw = prefs.getString(_globalHistoryKey) ?? '{}';
@@ -153,7 +160,6 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
       json.decode(merchantRaw),
     );
 
-    // Força a conversão segura do histórico do comerciante específico para Map<String, dynamic>
     final Map<String, dynamic> thisMerchantHistory =
         merchantHistory.containsKey(merchantId) &&
             merchantHistory[merchantId] is Map
@@ -164,6 +170,30 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
     merchantHistory[merchantId] = thisMerchantHistory;
 
     await prefs.setString(_merchantHistoryKey, json.encode(merchantHistory));
+  }
+
+  /// Despoleta a janela nativa para alteração da componente temporal
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay currentTime = TimeOfDay.fromDateTime(_localFatura.data);
+
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: currentTime,
+    );
+
+    if (picked != null && picked != currentTime) {
+      setState(() {
+        _localFatura = _localFatura.copyWith(
+          data: DateTime(
+            _localFatura.data.year,
+            _localFatura.data.month,
+            _localFatura.data.day,
+            picked.hour,
+            picked.minute,
+          ),
+        );
+      });
+    }
   }
 
   // --- Regista no Cashew e guarda o perfil ---
@@ -181,18 +211,17 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
       }
 
       // Guarda o perfil atualizado
-      await _profileService.saveProfile(
-        widget.fatura.nifComerciante,
-        _profile!,
-      );
-      // Lança o Cashew
+      await _profileService.saveProfile(_localFatura.nifComerciante, _profile!);
+
+      // Enviamos apenas a fatura local totalmente atualizada
       await _cashewLauncher.launchCashew(
-        fatura: widget.fatura,
+        fatura: _localFatura,
         category: _profile!.category,
         subcategory: _profile!.subcategory,
         account: _selectedAccount,
         title: _profile!.name,
       );
+
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
@@ -230,10 +259,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
       _isProcessing = true;
     });
     try {
-      await _profileService.saveProfile(
-        widget.fatura.nifComerciante,
-        _profile!,
-      );
+      await _profileService.saveProfile(_localFatura.nifComerciante, _profile!);
       if (mounted) {
         setState(() {
           _isMerchantStored = true;
@@ -766,6 +792,12 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final String dataTexto =
+        "${_localFatura.data.day.toString().padLeft(2, '0')}/${_localFatura.data.month.toString().padLeft(2, '0')}/${_localFatura.data.year}";
+
+    final String horaTexto =
+        "${_localFatura.data.hour.toString().padLeft(2, '0')}:${_localFatura.data.minute.toString().padLeft(2, '0')}";
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Confirmar despesa'),
@@ -797,10 +829,31 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                             fontSize: 18,
                           ),
                         ),
-                        subtitle: Text('NIF: ${widget.fatura.nifComerciante}'),
+                        subtitle: Text('NIF: ${_localFatura.nifComerciante}'),
                         trailing: const Icon(
                           Icons.edit,
                           size: 18,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Card(
+                    child: InkWell(
+                      onTap: () => _selectTime(context),
+                      borderRadius: BorderRadius.circular(12),
+                      child: ListTile(
+                        leading: const Icon(Icons.calendar_month, size: 40),
+                        title: const Text('Data e hora da fatura'),
+                        subtitle: Text(
+                          '$dataTexto às $horaTexto',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        trailing: const Icon(
+                          Icons.access_time,
                           color: Colors.grey,
                         ),
                       ),
@@ -817,7 +870,10 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                           _profile?.category.isEmpty ?? true
                               ? 'Não definida'
                               : '${_profile!.category}${_profile!.subcategory != null ? ' > ${_profile!.subcategory}' : ''}',
-                          style: const TextStyle(fontSize: 16),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         trailing: const Icon(
                           Icons.arrow_drop_down,
@@ -839,7 +895,10 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                         subtitle: Text(
                           _selectedAccount ??
                               'Não definida (Selecionar no Cashew)',
-                          style: const TextStyle(fontSize: 16),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         trailing: const Icon(
                           Icons.arrow_drop_down,
@@ -853,7 +912,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       leading: const Icon(Icons.euro, size: 40),
                       title: const Text('Valor total'),
                       subtitle: Text(
-                        '${widget.fatura.valorTotal.toStringAsFixed(2)} €',
+                        '${_localFatura.valorTotal.toStringAsFixed(2)} €',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -861,6 +920,24 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       ),
                     ),
                   ),
+                  if (_sendFiscalInfo) ...[
+                    const SizedBox(height: 12),
+                    Card(
+                      color: Colors.yellow[100],
+                      child: ListTile(
+                        leading: const Icon(Icons.info, size: 40),
+                        title: const Text('Informação fiscal'),
+                        subtitle: Text(
+                          _localFatura.toString(),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                   const Spacer(),
                   SizedBox(
                     width: double.infinity,

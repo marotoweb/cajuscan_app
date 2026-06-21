@@ -28,6 +28,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   bool _confirmOnCashew = true;
   bool _continuousScan = true;
+  bool _sendFiscalInfo = false;
   bool _isLoadingSettings = true;
 
   @override
@@ -40,11 +41,12 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _loadSettings() async {
     final confirmValue = await _settingsService.getConfirmOnCashew();
     final continuousValue = await _settingsService.getContinuousScan();
-
+    final fiscalInfoValue = await _settingsService.getSendFiscalInfo();
     if (mounted) {
       setState(() {
         _confirmOnCashew = confirmValue;
         _continuousScan = continuousValue;
+        _sendFiscalInfo = fiscalInfoValue;
         _isLoadingSettings = false;
       });
     }
@@ -253,6 +255,18 @@ class _SettingsPageState extends State<SettingsPage> {
                   },
                   secondary: const Icon(Icons.all_inclusive),
                 ),
+                SwitchListTile(
+                  title: const Text('Anexar metadados fiscais'),
+                  subtitle: const Text(
+                    'Insere dados adicionais às notas da transação.',
+                  ),
+                  value: _sendFiscalInfo,
+                  onChanged: (bool value) async {
+                    await _settingsService.setSendFiscalInfo(value);
+                    if (mounted) setState(() => _sendFiscalInfo = value);
+                  },
+                  secondary: const Icon(Icons.receipt_long),
+                ),
                 const Divider(),
                 ListTile(
                   leading: const Icon(Icons.store),
@@ -319,7 +333,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 const Divider(),
                 ListTile(
                   leading: const Icon(Icons.info_outline),
-                  title: const Text('Sobre a aplicação'),
+                  title: const Text('Sobre CajuScan'),
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(

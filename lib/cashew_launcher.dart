@@ -1,4 +1,5 @@
 // lib/cashew_launcher.dart
+
 import 'package:url_launcher/url_launcher.dart';
 import 'fatura_model.dart';
 import 'settings_service.dart';
@@ -21,14 +22,21 @@ class CashewLauncher {
         ? 'addTransactionRoute'
         : 'addTransaction';
 
+    // Consulta se o utilizador tem ativa a opção de anexar metadados fiscais completos nas notas
+    final bool sendFiscalInfo = await _settingsService.getSendFiscalInfo();
+
     // Constrói o mapa de parâmetros da query, garantindo que o valor é negativo.
     final transactionTitle = title ?? 'Despesa ${fatura.nifComerciante}';
+
+    final String notasFinais =
+        'Fatura importada via QR Code\n'
+        '${sendFiscalInfo ? fatura.toString() : 'NIF: ${fatura.nifComerciante}'}';
 
     final Map<String, String> queryParameters = {
       'amount': (-fatura.valorTotal).toString(),
       'date': fatura.data.toIso8601String().split('T').first,
       'title': transactionTitle,
-      'notes': 'Fatura importada via QR Code\nNIF: ${fatura.nifComerciante}',
+      'notes': notasFinais,
     };
 
     // Adiciona os parâmetros apenas se não estiverem vazios
@@ -44,9 +52,7 @@ class CashewLauncher {
       queryParameters['account'] = account;
     }
 
-    // Constrói o URI final usando o construtor Uri.
-    // Este construtor trata AUTOMATICAMENTE da codificação de caracteres especiais
-    // nos valores do mapa 'queryParameters'.
+    // Constrói o URI final para abrir o Cashew com os parâmetros necessários.
     final uri = Uri(
       scheme: 'https',
       host: 'cashewapp.web.app',
