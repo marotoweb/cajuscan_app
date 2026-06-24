@@ -23,8 +23,10 @@ class BackupService {
       final categories = await _categoryService.getCategories();
       final accounts = await _accountService.getAccounts();
 
+      final now = DateTime.now();
+
       final backupData = {
-        'backup_date': DateTime.now().toIso8601String(),
+        'backup_date': now.toIso8601String(),
         'profiles': profiles.map((key, value) => MapEntry(key, value.toMap())),
         'categories': categories,
         'accounts': accounts,
@@ -33,10 +35,21 @@ class BackupService {
       final jsonString = json.encode(backupData);
       final Uint8List bytes = utf8.encode(jsonString);
 
+      // Gerar o nome do ficheiro com base no timestamp
+      final year = now.year;
+      final month = now.month.toString().padLeft(2, '0');
+      final day = now.day.toString().padLeft(2, '0');
+      final hour = now.hour.toString().padLeft(2, '0');
+      final minute = now.minute.toString().padLeft(2, '0');
+      final second = now.second.toString().padLeft(2, '0');
+
+      final dynamicFileName =
+          'cajuscan-$year-$month-$day-$hour-$minute-$second.json';
+
       // Usar o flutter_file_dialog para guardar o ficheiro
       final params = SaveFileDialogParams(
         data: bytes,
-        fileName: 'cajuscan_backup.json',
+        fileName: dynamicFileName,
       );
 
       final filePath = await FlutterFileDialog.saveFile(params: params);
