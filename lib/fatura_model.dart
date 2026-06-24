@@ -2,66 +2,82 @@
 
 class Fatura {
   // Chave A: NIF do emitente / comerciante
-  final String nifComerciante;
+  // Exemplo: A:123456789
+  final String merchantNif;
 
   // Chave B: NIF do adquirente / cliente (opcional)
-  final String nifCliente;
+  // Exemplo: B:999999990
+  final String clientNif;
 
   // Chave C: País do adquirente / cliente (opcional)
-  final String paisCliente;
+  // Exemplo: C:PT
+  final String clientCountry;
 
   // Chave D: Tipo de documento (ex: FT - Fatura, FS - Fatura Simplificada)
-  final String tipoDocumento;
+  // Exemplo: D:FT
+  final String documentType;
 
   // Chave E: Estado do documento (ex: N - Normal, C - Cancelado)
-  final String estadoDocumento;
+  // Exemplo: E:N
+  final String documentStatus;
 
   // Chave F: Data de emissão do documento
-  final DateTime data;
+  //Exemplo: F:20191231
+  final DateTime date;
 
-  // Chave G: Identificação única do documento (Série e Número da fatura)
-  final String identificacaoDocumento;
+  // Chave G: Identificação única do documento
+  // Exemplo: G:FT AB2019/0035
+  final String documentId;
 
   // Chave H: ATCUD (Código único do documento)
+  // Exemplo: H:CSDF7T5H0035
   final String atcud;
 
-  // Chave O: Valor total do documento (com impostos)
-  final double valorTotal;
+  // Chave N: Valor total de IVA e Imposto do Selo
+  // N:64000.02
+  final double vatAmount;
 
-  // Chave N: Valor total do IVA
-  final double valorIva;
+  // Chave O: Valor total do documento com impostos
+  // Exemplo: O:513600.58
+  final double totalAmount;
 
-  // Chave S: Informação de controlo (depende do terminal)
-  final String informacaoControlo;
+  // Chave Q: 4 carateres do Hash
+  // Exemplo: Q:kLp0
+  final String docHash;
+
+  // Chave S: Outras informações
+  final String controlInfo;
 
   Fatura({
-    required this.nifComerciante,
-    required this.nifCliente,
-    required this.paisCliente,
-    required this.tipoDocumento,
-    required this.estadoDocumento,
-    required this.data,
-    required this.identificacaoDocumento,
+    required this.merchantNif,
+    required this.clientNif,
+    required this.clientCountry,
+    required this.documentType,
+    required this.documentStatus,
+    required this.date,
+    required this.documentId,
     required this.atcud,
-    required this.valorTotal,
-    required this.valorIva,
-    required this.informacaoControlo,
+    required this.vatAmount,
+    required this.totalAmount,
+    required this.docHash,
+    required this.controlInfo,
   });
 
   // Método copyWith mantém-se limpo, focado em atualizar o DateTime composto
-  Fatura copyWith({DateTime? data}) {
+  Fatura copyWith({DateTime? date}) {
     return Fatura(
-      nifComerciante: nifComerciante,
-      nifCliente: nifCliente,
-      paisCliente: paisCliente,
-      tipoDocumento: tipoDocumento,
-      estadoDocumento: estadoDocumento,
-      data: data ?? this.data,
-      identificacaoDocumento: identificacaoDocumento,
+      merchantNif: merchantNif,
+      clientNif: clientNif,
+      clientCountry: clientCountry,
+      documentType: documentType,
+      documentStatus: documentStatus,
+      date: date ?? this.date,
+      documentId: documentId,
       atcud: atcud,
-      valorTotal: valorTotal,
-      valorIva: valorIva,
-      informacaoControlo: informacaoControlo,
+      vatAmount: vatAmount,
+      totalAmount: totalAmount,
+      docHash: docHash,
+      controlInfo: controlInfo,
     );
   }
 
@@ -79,62 +95,69 @@ class Fatura {
       }
     }
 
-    final String nif = dataMap['A'] ?? 'N/A';
-    final String nifCliente = dataMap['B'] ?? 'N/A';
-    final String paisCliente = dataMap['C'] ?? 'N/A';
-    final String tipoDoc = dataMap['D'] ?? 'Fatura';
-    final String numDoc = dataMap['E'] ?? 'N/A';
+    final String merchantNif = dataMap['A'] ?? 'N/A';
+    final String clientNif = dataMap['B'] ?? 'N/A';
+    final String clientCountry = dataMap['C'] ?? 'N/A';
+    final String documentType = dataMap['D'] ?? 'Fatura';
+    final String documentStatus = dataMap['E'] ?? 'N/A';
 
-    final String dataString = dataMap['F'] ?? ''; // Formato: 20250924
+    final String rawDate = (dataMap['F'] ?? '').trim();
     final DateTime dateNow = DateTime.now();
-    DateTime dataFatura = dateNow;
+    DateTime finalDate = dateNow;
 
-    final DateTime? dataParse = DateTime.tryParse(dataString);
-    if (dataParse != null) {
-      // Fusão da data obtida via tryParse com a hora e minuto atuais do sistema
-      dataFatura = DateTime(
-        dataParse.year,
-        dataParse.month,
-        dataParse.day,
-        dateNow.hour,
-        dateNow.minute,
-      );
+    if (rawDate.length == 8) {
+      final String year = rawDate.substring(0, 4);
+      final String month = rawDate.substring(4, 6);
+      final String day = rawDate.substring(6, 8);
+
+      // Reconstrói no formato ISO (AAAA-MM-DD) aceitado nativamente pelo tryParse
+      final DateTime? parsedDate = DateTime.tryParse('$year-$month-$day');
+      if (parsedDate != null) {
+        finalDate = DateTime(
+          parsedDate.year,
+          parsedDate.month,
+          parsedDate.day,
+          dateNow.hour,
+          dateNow.minute,
+        );
+      }
     }
 
-    final String identificacaoDoc = dataMap['G'] ?? '';
-    final String atcudCode = dataMap['H'] ?? '';
-    final double valorIva = double.tryParse(dataMap['N'] ?? '0.0') ?? 0.0;
-    final double valorTotal = double.tryParse(dataMap['O'] ?? '0.0') ?? 0.0;
-    final String informacaoControlo = dataMap['S'] ?? '';
+    final String documentId = dataMap['G'] ?? '';
+    final String atcud = dataMap['H'] ?? '';
+
+    final double vatAmount =
+        double.tryParse((dataMap['N'] ?? '0.0').trim()) ?? 0.0;
+    final double totalAmount =
+        double.tryParse((dataMap['O'] ?? '0.0').trim()) ?? 0.0;
+
+    final String docHash = dataMap['Q'] ?? '';
+    final String controlInfo = dataMap['S'] ?? '';
 
     return Fatura(
-      nifComerciante: nif,
-      nifCliente: nifCliente,
-      paisCliente: paisCliente,
-      tipoDocumento: tipoDoc,
-      estadoDocumento: numDoc,
-      data: dataFatura,
-      identificacaoDocumento: identificacaoDoc,
-      valorTotal: valorTotal,
-      valorIva: valorIva,
-      atcud: atcudCode,
-      informacaoControlo: informacaoControlo,
+      merchantNif: merchantNif,
+      clientNif: clientNif,
+      clientCountry: clientCountry,
+      documentType: documentType,
+      documentStatus: documentStatus,
+      date: finalDate,
+      documentId: documentId,
+      atcud: atcud,
+      vatAmount: vatAmount,
+      totalAmount: totalAmount,
+      docHash: docHash,
+      controlInfo: controlInfo,
     );
   }
 
   @override
   String toString() {
-    final horaTexto =
-        "${data.hour.toString().padLeft(2, '0')}:${data.minute.toString().padLeft(2, '0')}";
-    final dataFormatada =
-        "${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')}/${data.year} $horaTexto";
-
-    return 'NIF: $nifComerciante\n'
-        'Data: $dataFormatada\n'
-        'Tipo: $tipoDocumento\n'
-        'Doc: $identificacaoDocumento\n'
+    return 'NIF: $merchantNif\n'
+        'Tipo: $documentType\n'
+        'Doc: $documentId\n'
         'ATCUD: $atcud\n'
-        'Valor: ${valorTotal.toStringAsFixed(2)}€ (IVA: ${valorIva.toStringAsFixed(2)}€)\n'
-        '${informacaoControlo.isNotEmpty ? "Controlo: $informacaoControlo" : ""}';
+        'Valor: ${totalAmount.toStringAsFixed(2)}€ (IVA: ${vatAmount.toStringAsFixed(2)}€)\n'
+        'Hash: $docHash\n'
+        '${controlInfo.isNotEmpty ? "Controlo: $controlInfo" : ""}';
   }
 }

@@ -26,15 +26,15 @@ class CashewLauncher {
     final bool sendFiscalInfo = await _settingsService.getSendFiscalInfo();
 
     // Constrói o mapa de parâmetros da query, garantindo que o valor é negativo.
-    final transactionTitle = title ?? 'Despesa ${fatura.nifComerciante}';
+    final transactionTitle = title ?? 'Despesa ${fatura.merchantNif}';
 
     final String notasFinais =
         'Fatura importada via QR Code\n'
-        '${sendFiscalInfo ? fatura.toString() : 'NIF: ${fatura.nifComerciante}'}';
+        '${sendFiscalInfo ? fatura.toString() : 'NIF: ${fatura.merchantNif}'}';
 
     final Map<String, String> queryParameters = {
-      'amount': (-fatura.valorTotal).toString(),
-      'date': fatura.data.toIso8601String().split('T').first,
+      'amount': (-fatura.totalAmount).toString(),
+      'date': fatura.date.toIso8601String(),
       'title': transactionTitle,
       'notes': notasFinais,
     };

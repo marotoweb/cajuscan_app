@@ -62,7 +62,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
 
     try {
       final loadedProfile = await _profileService.getProfile(
-        _localFatura.nifComerciante,
+        _localFatura.merchantNif,
       );
 
       final loadedCategories = widget.categories;
@@ -89,7 +89,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
           final Map<String, dynamic> globalHistory = json.decode(globalRaw);
           final Map<String, dynamic> merchantHistory = json.decode(merchantRaw);
 
-          final String merchantId = _localFatura.nifComerciante;
+          final String merchantId = _localFatura.merchantNif;
           final Map<String, dynamic> thisMerchantHistory =
               merchantHistory[merchantId] ?? {};
 
@@ -144,7 +144,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
   /// Regista a utilização da conta para refinar as futuras sugestões
   Future<void> _incrementAccountUsage(String account) async {
     final prefs = await SharedPreferences.getInstance();
-    final String merchantId = _localFatura.nifComerciante;
+    final String merchantId = _localFatura.merchantNif;
 
     // Atualiza o histórico global
     final String globalRaw = prefs.getString(_globalHistoryKey) ?? '{}';
@@ -174,7 +174,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
 
   /// Despoleta a janela nativa para alteração da componente temporal
   Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay currentTime = TimeOfDay.fromDateTime(_localFatura.data);
+    final TimeOfDay currentTime = TimeOfDay.fromDateTime(_localFatura.date);
 
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -184,10 +184,10 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
     if (picked != null && picked != currentTime) {
       setState(() {
         _localFatura = _localFatura.copyWith(
-          data: DateTime(
-            _localFatura.data.year,
-            _localFatura.data.month,
-            _localFatura.data.day,
+          date: DateTime(
+            _localFatura.date.year,
+            _localFatura.date.month,
+            _localFatura.date.day,
             picked.hour,
             picked.minute,
           ),
@@ -211,7 +211,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
       }
 
       // Guarda o perfil atualizado
-      await _profileService.saveProfile(_localFatura.nifComerciante, _profile!);
+      await _profileService.saveProfile(_localFatura.merchantNif, _profile!);
 
       // Enviamos apenas a fatura local totalmente atualizada
       await _cashewLauncher.launchCashew(
@@ -259,7 +259,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
       _isProcessing = true;
     });
     try {
-      await _profileService.saveProfile(_localFatura.nifComerciante, _profile!);
+      await _profileService.saveProfile(_localFatura.merchantNif, _profile!);
       if (mounted) {
         setState(() {
           _isMerchantStored = true;
@@ -793,10 +793,10 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
   @override
   Widget build(BuildContext context) {
     final String dataTexto =
-        "${_localFatura.data.day.toString().padLeft(2, '0')}/${_localFatura.data.month.toString().padLeft(2, '0')}/${_localFatura.data.year}";
+        "${_localFatura.date.day.toString().padLeft(2, '0')}/${_localFatura.date.month.toString().padLeft(2, '0')}/${_localFatura.date.year}";
 
     final String horaTexto =
-        "${_localFatura.data.hour.toString().padLeft(2, '0')}:${_localFatura.data.minute.toString().padLeft(2, '0')}";
+        "${_localFatura.date.hour.toString().padLeft(2, '0')}:${_localFatura.date.minute.toString().padLeft(2, '0')}";
 
     return Scaffold(
       appBar: AppBar(
@@ -829,7 +829,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                             fontSize: 18,
                           ),
                         ),
-                        subtitle: Text('NIF: ${_localFatura.nifComerciante}'),
+                        subtitle: Text('NIF: ${_localFatura.merchantNif}'),
                         trailing: const Icon(
                           Icons.edit,
                           size: 18,
@@ -912,7 +912,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       leading: const Icon(Icons.euro, size: 40),
                       title: const Text('Valor total'),
                       subtitle: Text(
-                        '${_localFatura.valorTotal.toStringAsFixed(2)} €',
+                        '${_localFatura.totalAmount.toStringAsFixed(2)} €',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -921,12 +921,11 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                     ),
                   ),
                   if (_sendFiscalInfo) ...[
-                    const SizedBox(height: 12),
                     Card(
                       color: Colors.yellow[100],
                       child: ListTile(
                         leading: const Icon(Icons.info, size: 40),
-                        title: const Text('Informação fiscal'),
+                        title: const Text('Notas adicionais'),
                         subtitle: Text(
                           _localFatura.toString(),
                           style: const TextStyle(
@@ -938,6 +937,7 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       ),
                     ),
                   ],
+                  // Espaço flexível para empurrar o botão para baixo
                   const Spacer(),
                   SizedBox(
                     width: double.infinity,
@@ -965,16 +965,20 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       ),
                     ),
                   ),
+                  // Botão para guardar apenas o comerciante, se ainda não estiver guardado
                   if (!_isMerchantStored) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.save),
-                        label: const Text('Apenas guardar comerciante'),
+                        label: const Text(
+                          'Apenas guardar comerciante',
+                          style: TextStyle(fontSize: 18),
+                        ),
                         onPressed: _isProcessing ? null : _saveProfileOnly,
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           side: BorderSide(
                             color: Theme.of(context).colorScheme.primary,
                           ),
@@ -982,9 +986,10 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                       ),
                     ),
                   ],
+                  // Espaço extra para evitar que o botão fique muito próximo da parte inferior da tela
                   Padding(
                     padding: EdgeInsets.only(
-                      bottom: MediaQuery.of(context).viewPadding.bottom + 16.0,
+                      bottom: MediaQuery.of(context).viewPadding.bottom + 12.0,
                     ),
                   ),
                 ],
