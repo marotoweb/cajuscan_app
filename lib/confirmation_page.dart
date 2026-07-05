@@ -985,6 +985,13 @@ class _ConfirmationPageState extends State<ConfirmationPage> {
                         ),
                       ),
                     ),
+                  ] else ...[
+                    Padding(
+                      padding: EdgeInsets.only(
+                        bottom:
+                            MediaQuery.of(context).viewPadding.bottom + 16.0,
+                      ),
+                    ),
                   ],
                   // Espaço extra para evitar que o botão fique muito próximo da parte inferior da tela
                   Padding(
