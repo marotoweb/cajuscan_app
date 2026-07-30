@@ -3,17 +3,18 @@
 
 ### ✨ Novidades
 - **Motor de predição inteligente de contas:** A aplicação passa a sugerir automaticamente a conta de destino mais provável ao ler uma fatura. O algoritmo analisa o histórico local em dupla camada: primeiro tenta a conta mais frequente para aquele NIF e, se for um comerciante novo, recorre à conta mais utilizada globalmente, ordenando o menu de forma dinâmica.
-- **Interface de confirmação redesenhada:** O ecrã de revisão de dados foi atualizado para uma navegação consistente baseada em cartões interativos. O toque no comerciante abre um diálogo de edição rápida do nome, enquanto a categoria e a conta abrem painéis inferiores (*bottom sheets*) integrados para uma seleção limpa.
-- **Barra de pesquisa nos comerciantes:** Adicionada uma caixa de pesquisa dinâmica no topo da listagem de gestão. Permite filtrar e encontrar instantaneamente estabelecimentos guardados por nome, NIF, categoria ou subcategoria em tempo real.
-- **Gestão de contas dedicada:** Criação de uma área isolada nas definições para adicionar, editar ou eliminar as contas de destino de forma independente.
+- **Interface de confirmação redesenhada:** O ecrã de revisão de dados foi atualizado para uma navegação consistente baseada em cartões interativos. O toque no comerciante abre um diálogo de edição rápida do nome, enquanto a categoria e a conta abrem painéis inferiores integrados para uma seleção simples e limpa.
+- **Pesquisa rápida de comerciantes:** Adicionada uma barra de pesquisa no topo da lista de comerciantes para encontrares instantaneamente qualquer estabelecimento por nome, NIF ou categoria.
+- **Gestão de contas dedicada:** Nova secção nas definições para adicionar, editar ou remover as tuas contas de destino de forma simples e independente.
 - **Importação de contas do Cashew:** Suporte expandido no *share sheet* para receber também a estrutura de contas de destino diretamente através da funcionalidade de partilha do Cashew.
+- **Importação direta do Cashew:** Agora podes partilhar a estrutura de contas e categorias diretamente da funcionalidade de partilha do Cashew para a aplicação.
 - **Exportações cronológicas:** O nome do ficheiro de backup passou a incluir um timestamp dinâmico gerado no momento da exportação (ex: `cajuscan-AAAA-MM-DD-HH-MM-SS.json`). Isto garante a ordenação cronológica natural dos ficheiros no sistema operativo e evita que backups antigos sejam sobrescritos por engano.
 
 ### 🛠️ Melhorias e Refatoração
 - **Padronização do modelo Fatura:** Refatoração integral das propriedades da estrutura interna do modelo.
-- **Ciclo de vida optimizado:** Transição de componentes estruturais da listagem para `StatefulWidget`, garantindo que os estados de filtragem e pesquisa corram de forma fluida na interface sem desencadear leituras redundantes de ficheiro.
+- **Navegação mais fluida:** Otimização interna da listagem de comerciantes para que a pesquisa e filtragem respondam de forma instantânea sem solavancos.
 - **Segurança assíncrona:** Implementação de validações robustas com `context.mounted` em fluxos assíncronos de diálogos e alertas de eliminação.
-- **Ajustes visuais:** Alinhamento geral de ícones, introdução de setas indicadoras de navegação (`Icons.chevron_right`) nas opções e inclusão de subtítulos informativos nas definições.
+- **Melhorias visuais:** Ajuste de ícones, introdução de setas indicadoras e menus mais claros nas definições.
 - **Backup alargado:** O ficheiro de backup (`.json`) foi atualizado para salvaguardar de forma unificada os perfis de comerciantes, categorias, contas e todo o histórico de predição.
 
 ## 1.0.7
