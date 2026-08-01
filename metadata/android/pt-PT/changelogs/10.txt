@@ -1,0 +1,5 @@
+- Opção para adicionar metadados fiscais nas notas de transação do Cashew.
+- Permitida a edição manual de data/hora na confirmação com seletores de 24h.
+- Exportação de backups com timestamp dinâmico no nome do ficheiro.
+- Correção na validação de comerciantes por NIF.
+- Ajustes visuais na interface de confirmação
