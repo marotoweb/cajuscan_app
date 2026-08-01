@@ -1,3 +1,8 @@
+## 1.0.10
+
+### ✨ Novidades
+* **Leitura via câmara nativa e seleção de texto:** Possibilidade de capturar um código QR com a câmara do telemóvel e enviar os dados diretamente para o CajuScan através do menu de partilha do sistema ou da opção "Processar texto".
+
 ## 1.0.9
 
 ### ✨ Novidades
