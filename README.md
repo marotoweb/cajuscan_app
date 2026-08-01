@@ -51,9 +51,9 @@ Apresentação visual das principais funcionalidades da aplicação CajuScan.
 
 * **Leitura de código QR de faturas:** Utiliza a câmara do telemóvel para digitalizar e processar instantaneamente os códigos QR (ATCUD) das faturas emitidas em Portugal.
 * **Importação de ficheiros:** Permite ler o código QR diretamente de ficheiros **PDF** ou **imagens** da galeria, facilitando o registo de faturas digitais recebidas por email.
-* **Integração com Cashew:** Envia os dados da fatura (valor, data, NIF do comerciante) diretamente para a aplicação Cashew, pré-preenchendo uma nova transação.
+* **Integração com Cashew:** Envia os dados da fatura (valor, data, NIF do comerciante) diretamente para a aplicação Cashew, pré-preenchendo uma nova transação. Suporta a inclusão opcional de metadados fiscais adicionais nas notas.
 * **Motor de Predição de Contas Dinâmico:** Algoritmo inteligente que analisa o histórico local para sugerir a conta de destino mais provável. Utiliza uma lógica de dupla camada: associa a conta mais frequente para aquele comerciante e recorre à conta mais utilizada globalmente como alternativa, ordenando o menu com base nos seus hábitos.
-* **Interface de confirmação moderna:** O ecrã de revisão foi redesenhado para uma navegação consistente baseada em cartões interativos. O toque no comerciante abre um diálogo de edição rápida do nome, enquanto a categoria e a conta abrem painéis inferiores (*bottom sheets*) integrados para uma seleção rápida e limpa.
+* **Interface de confirmação moderna:** O ecrã de revisão foi redesenhado para uma navegação consistente baseada em cartões interativos. O toque no comerciante abre um diálogo de edição rápida do nome, permite ajustar a data e hora da transação (com seletores regionais em formato 24h) e apresenta painéis inferiores (*bottom sheets*) integrados para seleção de categoria e conta.
 * **Gestão inteligente de comerciantes:**
     * Guarda automaticamente o NIF de cada comerciante.
     * Permite associar um nome personalizado (ex: "Comerciante XPTO") e uma categoria/subcategoria padrão a cada NIF.
@@ -67,7 +67,8 @@ Apresentação visual das principais funcionalidades da aplicação CajuScan.
     * Opção para registar a transação diretamente no Cashew (sem confirmação).
     * Opção para abrir os dados no Cashew para revisão antes de guardar (requer confirmação).
     * Possibilidade de apenas guardar o perfil de um novo comerciante a partir do código QR, sem ser necessário gerar uma transação.
-* **Backup e restauro:** Funcionalidade para exportar e importar todos os dados da aplicação (perfis de comerciantes, categorias, contas e histórico de predição) através de um único ficheiro estruturado em formato `.json`, facilitando a migração entre dispositivos.* **Interface intuitiva:**
+* **Backup e restauro:** Funcionalidade para exportar e importar todos os dados da aplicação (perfis de comerciantes, categorias, contas e histórico de predição) através de um único ficheiro `.json` com nomeação cronológica automática (`cajuscan-AAAA-MM-DD-HH-MM-SS.json`), facilitando a migração entre dispositivos.
+* **Interface intuitiva:**
     * Scanner de câmara com uma sobreposição clara para facilitar o alinhamento do QR Code.
     * Design limpo e focado na simplicidade de uso.
 * **Privacidade e Segurança:** Aplicação inteiramente de código aberto (FOSS) com processamento local e offline, sem telemetria ou servidores externos. Aplicação assinada digitalmente e preparada para compilações reprodutíveis (**Reproducible Builds**).
@@ -85,6 +86,7 @@ Apresentação visual das principais funcionalidades da aplicação CajuScan.
 *   **Seleção de ficheiros:** [file_picker](https://pub.dev/packages/file_picker)
 *   **Informação da aplicação:** [package_info_plus](https://pub.dev/packages/package_info_plus )
 *   **Recepção de intents:** [receive_sharing_intent](https://pub.dev/packages/receive_sharing_intent)
+*   **Localização:** [flutter_localizations](https://api.flutter.dev/flutter/flutter_localizations/flutter_localizations-library.html)
 
 ---
 

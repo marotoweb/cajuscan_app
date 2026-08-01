@@ -1,21 +1,32 @@
+## 1.0.9
+
+### ✨ Novidades
+- **Suporte para metadados fiscais:** Opção nas definições para anexar dados fiscais adicionais nas notas de transação enviadas para o Cashew.
+- **Edição de hora da transação:** Possibilidade de ajustar manualmente a hora da fatura (anteriormente fixa nas 00:00) com seletores regionais em formato 24h (`pt_PT`).
+- **Exportações cronológicas:** O ficheiro de backup passa a incluir um timestamp dinâmico no formato `cajuscan-AAAA-MM-DD-HH-MM-SS.json` para evitar sobreposição de ficheiros.
+- **Apoio ao projeto:** Adicionado botão "Buy Me a Coffee" no README.
+
+### 🛠️ Correções e Ajustes
+- **Vínculo por NIF:** O botão de guardar/associar comerciante passa a validar estritamente pelo NIF e não pelo nome.
+- **Interface:** Ajuste no espaçamento inferior na página de confirmação para simetria com a barra de navegação do sistema.
+- **Refatoração:** Limpeza de propriedades no modelo interno de Fatura e unificação do fluxo de backups.
+
 ## 1.0.8
 # 🚀 Novidades da Versão 1.0.8
 
 ### ✨ Novidades
-- **Motor de predição inteligente de contas:** A aplicação passa a sugerir automaticamente a conta de destino mais provável ao ler uma fatura. O algoritmo analisa o histórico local em dupla camada: primeiro tenta a conta mais frequente para aquele NIF e, se for um comerciante novo, recorre à conta mais utilizada globalmente, ordenando o menu de forma dinâmica.
-- **Interface de confirmação redesenhada:** O ecrã de revisão de dados foi atualizado para uma navegação consistente baseada em cartões interativos. O toque no comerciante abre um diálogo de edição rápida do nome, enquanto a categoria e a conta abrem painéis inferiores integrados para uma seleção simples e limpa.
-- **Pesquisa rápida de comerciantes:** Adicionada uma barra de pesquisa no topo da lista de comerciantes para encontrares instantaneamente qualquer estabelecimento por nome, NIF ou categoria.
-- **Gestão de contas dedicada:** Nova secção nas definições para adicionar, editar ou remover as tuas contas de destino de forma simples e independente.
-- **Importação de contas do Cashew:** Suporte expandido no *share sheet* para receber também a estrutura de contas de destino diretamente através da funcionalidade de partilha do Cashew.
-- **Importação direta do Cashew:** Agora podes partilhar a estrutura de contas e categorias diretamente da funcionalidade de partilha do Cashew para a aplicação.
-- **Exportações cronológicas:** O nome do ficheiro de backup passou a incluir um timestamp dinâmico gerado no momento da exportação (ex: `cajuscan-AAAA-MM-DD-HH-MM-SS.json`). Isto garante a ordenação cronológica natural dos ficheiros no sistema operativo e evita que backups antigos sejam sobrescritos por engano.
+- **Motor de predição inteligente de contas:** Sugestão automática da conta de destino com base no histórico local por NIF e uso global.
+- **Interface de confirmação redesenhada:** Ecrã de revisão baseado em cartões interativos com edição rápida de comerciante, categoria e conta.
+- **Pesquisa rápida de comerciantes:** Barra de pesquisa por nome, NIF ou categoria.
+- **Gestão de contas dedicada:** Secção nas definições para gerir contas de destino de forma independente.
+- **Importação direta do Cashew:** Suporte no *share sheet* para receber a estrutura de contas e categorias via partilha do Cashew.
 
-### 🛠️ Melhorias e Refatoração
-- **Padronização do modelo Fatura:** Refatoração integral das propriedades da estrutura interna do modelo.
-- **Navegação mais fluida:** Otimização interna da listagem de comerciantes para que a pesquisa e filtragem respondam de forma instantânea sem solavancos.
-- **Segurança assíncrona:** Implementação de validações robustas com `context.mounted` em fluxos assíncronos de diálogos e alertas de eliminação.
-- **Melhorias visuais:** Ajuste de ícones, introdução de setas indicadoras e menus mais claros nas definições.
-- **Backup alargado:** O ficheiro de backup (`.json`) foi atualizado para salvaguardar de forma unificada os perfis de comerciantes, categorias, contas e todo o histórico de predição.
+### 🛠️ Melhorias
+- Otimização na listagem de comerciantes para filtragem instantânea.
+- Validações com `context.mounted` em fluxos assíncronos.
+- Ajuste de ícones e menus nas definições.
+- 
+> **Nota sobre o ciclo de lançamento:** Esta versão foi registada na fase de compilação (pre-release) e serviu de base para os testes de integração com o F-Droid. As melhorias e correções desenvolvidas subsequentemente foram consolidadas e disponibilizadas na **v1.0.9**.
 
 ## 1.0.7
 # 🚀 Novidades da Versão 1.0.7
