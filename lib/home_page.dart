@@ -59,35 +59,44 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _handleSharedContent(SharedMediaFile file) async {
-    String? jsonString;
+    String? rawContent;
 
     if (file.type == SharedMediaType.text) {
-      jsonString = file.path;
+      rawContent = file.path;
     } else if (file.type == SharedMediaType.file) {
       try {
-        final f = await _readFile(file.path);
-        jsonString = f;
+        rawContent = await _readFile(file.path);
       } catch (_) {
         _showError('Não foi possível ler o ficheiro partilhado.');
         return;
       }
     }
 
-    if (jsonString == null || jsonString.isEmpty) {
+    if (rawContent == null || rawContent.trim().isEmpty) {
       _showError('Conteúdo partilhado vazio ou inválido.');
       return;
     }
 
+    final trimmed = rawContent.trim();
+
+    // Tenta interpretar como Fatura (QR Code/ATCUD da câmara ou texto)
+    if (trimmed.contains('A:') && trimmed.contains('*')) {
+      await _processSharedFatura(trimmed);
+      return;
+    }
+
+    // Se não for ATCUD, tenta interpretar como JSON do Cashew
     Map<String, dynamic> data;
     try {
-      data = json.decode(jsonString) as Map<String, dynamic>;
+      data = json.decode(trimmed) as Map<String, dynamic>;
     } catch (_) {
-      _showError('O conteúdo partilhado não é um JSON válido.');
+      _showError('O conteúdo partilhado não é uma fatura nem um JSON válido.');
       return;
     }
 
     // Verifica se o JSON contém alguma das chaves esperadas do Cashew
     if (!data.containsKey('categories') && !data.containsKey('accounts')) {
+      _showError('Estrutura de dados não reconhecida.');
       return;
     }
 
@@ -113,6 +122,28 @@ class _HomePageState extends State<HomePage> {
 
     if (!mounted) return;
     _showImportDialog(categories, accounts);
+  }
+
+  Future<void> _processSharedFatura(String qrData) async {
+    try {
+      final fatura = Fatura.fromQrCodeString(qrData);
+      final categories = await _categoryService.getCategories();
+      final accounts = await _accountService.getAccounts();
+
+      if (!mounted) return;
+
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ConfirmationPage(
+            fatura: fatura,
+            categories: categories,
+            accounts: accounts,
+          ),
+        ),
+      );
+    } catch (_) {
+      _showError('Erro ao interpretar os dados da fatura partilhada.');
+    }
   }
 
   Future<String> _readFile(String path) async {
