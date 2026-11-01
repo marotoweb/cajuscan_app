@@ -1,0 +1,3 @@
+ABI split: smaller per-architecture APKs (armeabi-v7a, arm64-v8a, x86_64).
+Share intent support: process QR codes captured by the native camera.
+UI and stability improvements.

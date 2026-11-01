@@ -78,12 +78,15 @@ jobs:
         run: |
           # Isto garante que todos os ficheiros dentro do APK tenham a mesma data do commit
           export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
-          # Build limpo e determinístico
-          flutter build apk --release --no-tree-shake-icons
+          # Build limpo e determinístico (split por ABI)
+          flutter build apk --release --split-per-abi --no-tree-shake-icons
 
-      # 8. Renomear o APK
-      - name: Rename APK
-        run: mv build/app/outputs/flutter-apk/app-release.apk CajuScan-${{ github.ref_name }}.apk
+      # 8. Renomear os APKs
+      - name: Rename APKs
+        run: |
+          for abi in armeabi-v7a arm64-v8a x86_64; do
+            mv "build/app/outputs/flutter-apk/app-${abi}-release.apk" "CajuScan-${{ github.ref_name }}-${abi}.apk"
+          done
 
       # 9. Extrair notas da release atual
       # Esta etapa isola apenas o bloco de texto do RELEASE_NOTES.md que corresponde à tag atual.
@@ -111,7 +114,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # O nome do ficheiro que será anexado à release.
-          files: CajuScan-${{ github.ref_name }}.apk
+          files: CajuScan-${{ github.ref_name }}-*.apk
           # O nome / título da release.
           name: "CajuScan ${{ github.ref_name }}"
           # O nome da tag associada à release.
