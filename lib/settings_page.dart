@@ -225,6 +225,11 @@ class _SettingsPageState extends State<SettingsPage> {
       body: _isProcessing || _isLoadingSettings
           ? const Center(child: CircularProgressIndicator())
           : ListView(
+              // Garante que a última opção pode ser rolada para fora da
+              // barra de navegação do sistema e fica totalmente visível.
+              padding: EdgeInsets.only(
+                bottom: 16 + MediaQuery.of(context).padding.bottom,
+              ),
               children: [
                 // --- Interruptor de definições ---
                 SwitchListTile(
