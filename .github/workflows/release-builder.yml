@@ -95,15 +95,24 @@ jobs:
           TAG="${{ github.ref_name }}"
           # Remove o prefixo 'v' caso a tag seja gerada como 'v1.0.3' em vez de '1.0.3'
           VERSION=$(echo "$TAG" | sed 's/^v//')
-          
+          # Para tags beta/rc (ex: 1.0.10-beta.1), usa a versão base nas notas.
+          BASE_VERSION=$(echo "$VERSION" | sed 's/-.*//')
+
           echo "A extrair notas para a versão: $VERSION"
-          
+
+          # O sed procura por '## [1.0.3]' ou '## 1.0.3' até encontrar o próximo '## ' ou fim do ficheiro
+          NOTES=$(sed -n "/^## \[$VERSION\]\|^## $VERSION/,/^## /p" RELEASE_NOTES.md | sed '1d;$d')
+          if [ -z "$NOTES" ]; then
+            echo "Sem notas específicas para $VERSION; a usar $BASE_VERSION."
+            NOTES=$(sed -n "/^## \[$BASE_VERSION\]\|^## $BASE_VERSION/,/^## /p" RELEASE_NOTES.md | sed '1d;$d')
+          fi
+          if [ -z "$NOTES" ]; then
+            NOTES="Build de pré-lançamento ($TAG) para testes."
+          fi
+
           # Define o output multilinhas seguro para o GITHUB_ENV
           echo "RELEASE_BODY<<EOF_MARKER" >> $GITHUB_ENV
-          
-          # O sed procura por '## [1.0.3]' ou '## 1.0.3' até encontrar o próximo '## ' ou fim do ficheiro
-          sed -n "/^## \[$VERSION\]\|^## $VERSION/,/^## /p" RELEASE_NOTES.md | sed '1d;$d' >> $GITHUB_ENV
-          
+          echo "$NOTES" >> $GITHUB_ENV
           echo "EOF_MARKER" >> $GITHUB_ENV
 
       # 10. Fazer Upload do APK para a Release
@@ -119,5 +128,7 @@ jobs:
           name: "CajuScan ${{ github.ref_name }}"
           # O nome da tag associada à release.
           tag_name: ${{ github.ref_name }}
+          # Tags beta/rc são publicadas como pré-lançamento no GitHub.
+          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
           # O corpo da release, extraído dinamicamente do histórico do RELEASE_NOTES.md.
           body: ${{ env.RELEASE_BODY }}
