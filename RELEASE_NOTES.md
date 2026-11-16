@@ -1,3 +1,15 @@
+## Unreleased
+
+### 🛠️ Correções e Ajustes
+- **Acessibilidade (Definições):** A opção "Sobre CajuScan" passa a poder ser totalmente revelada acima da barra de navegação do sistema, garantindo um alvo de toque de pelo menos 48 dp (issue #11).
+
+### 📝 Documentação
+- **README:** Botão "Buy Me a Coffee" redimensionado e compatível com GitHub e GitLab (atributos `width`/`height` em vez de CSS).
+- **Notas de lançamento:** Adicionada secção "Unreleased" para acompanhar alterações ainda não publicadas.
+
+### ⚙️ CI
+- **Pré-lançamentos:** O workflow de release passa a marcar tags `-beta`/`-rc` como pré-lançamento e a reutilizar as notas da versão base quando não existem notas específicas.
+
 ## 1.0.10
 
 ### ✨ Novidades
