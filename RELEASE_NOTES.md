@@ -1,18 +1,17 @@
-## Unreleased
+## 1.0.11
 
 ### ✨ Novidades
 - **Ecrã inicial:** Novo fundo ilustrado no ecrã principal, tornando a seleção do método de leitura mais apelativa.
+- **Importar / Exportar:** As opções de backup e importação passam a estar numa página própria, acessível por uma única entrada "Importar / Exportar" nas Definições.
 
 ### 🛠️ Correções e Ajustes
 - **Acessibilidade (Definições):** A opção "Sobre CajuScan" fica num footer fixo, sempre visível acima da barra de navegação do sistema e com um alvo de toque de 48 dp (issue #11).
-- **Definições mais simples:** As opções de exportação e importação passam a estar agrupadas numa única entrada "Importar / Exportar", libertando espaço na lista.
 
 ### 📝 Documentação
 - **README:** Botão "Buy Me a Coffee" redimensionado e compatível com GitHub e GitLab (atributos `width`/`height` em vez de CSS).
-- **Notas de lançamento:** Adicionada secção "Unreleased" para acompanhar alterações ainda não publicadas.
 
 ### ⚙️ CI
-- **Pré-lançamentos:** O workflow de release passa a marcar tags `-beta`/`-rc` como pré-lançamento e a reutilizar as notas da versão base quando não existem notas específicas.
+- **Pré-lançamentos:** O workflow de release marca tags `-beta`/`-rc` como pré-lançamento e reutiliza as notas da versão base quando não existem notas específicas.
 
 ## 1.0.10
 
