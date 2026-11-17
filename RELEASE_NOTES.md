@@ -1,3 +1,8 @@
+## Unreleased
+
+### 🛠️ Correções e Ajustes
+- **Acessibilidade:** melhorado o contraste do texto (WCAG AA), adicionadas etiquetas aos botões só com ícone, feedback por TalkBack na leitura de QR e suporte a texto ampliado a 200%.
+
 ## 1.0.11
 
 ### ✨ Novidades

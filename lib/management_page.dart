@@ -380,6 +380,7 @@ class _ManagementPageState extends State<ManagementPage> {
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
                               icon: const Icon(Icons.clear),
+                              tooltip: 'Limpar pesquisa',
                               onPressed: () => _searchController.clear(),
                             )
                           : null,
@@ -392,15 +393,17 @@ class _ManagementPageState extends State<ManagementPage> {
                 ),
                 Expanded(
                   child: _filteredNifs.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Padding(
-                            padding: EdgeInsets.all(24.0),
+                            padding: const EdgeInsets.all(24.0),
                             child: Text(
                               'Nenhum comerciante encontrado.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.grey,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ),

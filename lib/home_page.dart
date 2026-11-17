@@ -254,11 +254,34 @@ class _HomePageState extends State<HomePage> {
     const double buttonHeight = 60.0;
 
     final btnStyle = ElevatedButton.styleFrom(
-      fixedSize: Size(buttonWidth, buttonHeight),
+      // minimumSize (em vez de fixedSize) permite crescer com fontes grandes
+      // sem cortar o texto.
+      minimumSize: Size(buttonWidth, buttonHeight),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
     );
+
+    Widget buildActionButton({
+      required IconData icon,
+      required String label,
+      required VoidCallback onPressed,
+    }) {
+      return ElevatedButton(
+        style: btnStyle,
+        onPressed: onPressed,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon),
+            const SizedBox(width: 12),
+            Flexible(child: Text(label, textAlign: TextAlign.center)),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -293,19 +316,19 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 const Spacer(),
-                const Text(
+                Text(
                   'Selecione o método de leitura da fatura.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 40),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.qr_code_scanner),
-                  label: const Text('Digitalizar fatura'),
+                buildActionButton(
+                  icon: Icons.qr_code_scanner,
+                  label: 'Digitalizar fatura',
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -313,14 +336,12 @@ class _HomePageState extends State<HomePage> {
                       ),
                     );
                   },
-                  style: btnStyle,
                 ),
                 const SizedBox(height: 20),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.file_present),
-                  label: const Text('Importar ficheiro (PDF/Foto)'),
+                buildActionButton(
+                  icon: Icons.file_present,
+                  label: 'Importar ficheiro (PDF/Foto)',
                   onPressed: () => _handleFileImport(context),
-                  style: btnStyle,
                 ),
                 const SizedBox(height: 40),
               ],

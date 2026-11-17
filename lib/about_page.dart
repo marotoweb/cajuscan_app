@@ -71,7 +71,7 @@ class _AboutPageState extends State<AboutPage> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ),
-          const Text(
+          Text(
             'Esta aplicação é fornecida "COMO ESTÁ", sem garantias de qualquer tipo, expressas ou implícitas. '
             'Ao utilizar o CajuScan, concorda que o faz por sua conta e risco.\n'
             'Apesar do autor desenvolver este aplicativo para seu uso pessoal, decidiu partilhar o mesmo sem qualquer custo.\n'
@@ -82,7 +82,9 @@ class _AboutPageState extends State<AboutPage> {
             'Se não concorda com estes termos, por favor, não utilize esta aplicação.\n\n'
             'Obrigado por utilizar o CajuScan!',
             textAlign: TextAlign.justify,
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 20),
           Center(

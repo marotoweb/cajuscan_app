@@ -2,6 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_zxing/flutter_zxing.dart';
 import 'fatura_model.dart';
 import 'confirmation_page.dart';
@@ -69,6 +70,12 @@ class _ScannerPageState extends State<ScannerPage>
         final accounts = await _accountService.getAccounts();
 
         if (!mounted) return;
+
+        SemanticsService.sendAnnouncement(
+          View.of(context),
+          'Fatura detetada. A abrir a confirmação.',
+          TextDirection.ltr,
+        );
 
         if (isContinuous) {
           // Empilha a página e reseta o scanner ao voltar
@@ -142,25 +149,29 @@ class _ScannerPageState extends State<ScannerPage>
         fit: StackFit.expand,
         children: [
           // Camada 1: O Scanner (ZXing)
-          ReaderWidget(
-            onScan: _handleDetection,
+          Semantics(
+            container: true,
+            label: 'Câmara ativa. Aponte para o código QR.',
+            child: ReaderWidget(
+              onScan: _handleDetection,
 
-            // Desativamos todas as decorações nativas
-            showFlashlight: false,
-            showGallery: false,
-            showToggleCamera: false,
+              // Desativamos todas as decorações nativas
+              showFlashlight: false,
+              showGallery: false,
+              showToggleCamera: false,
 
-            // Desativar o zoom traz uma melhoria de performance marginal
-            allowPinchZoom: false,
+              // Desativar o zoom traz uma melhoria de performance marginal
+              allowPinchZoom: false,
 
-            // Define a área de processamento para 75% da largura/altura disponível
-            cropPercent: 0.75,
+              // Define a área de processamento para 75% da largura/altura disponível
+              cropPercent: 0.75,
 
-            // Desactivar janela default do ZXing, usamos a nossa camada
-            showScannerOverlay: false,
+              // Desactivar janela default do ZXing, usamos a nossa camada
+              showScannerOverlay: false,
 
-            // Delay entre scans para evitar múltiplas leituras rápidas
-            scanDelay: const Duration(milliseconds: 500),
+              // Delay entre scans para evitar múltiplas leituras rápidas
+              scanDelay: const Duration(milliseconds: 500),
+            ),
           ),
 
           // Camada 2: Overlay (Fundo escurecido com recorte)
@@ -215,12 +226,19 @@ class _ScannerPageState extends State<ScannerPage>
             alignment: Alignment.bottomCenter,
             child: Padding(
               padding: const EdgeInsets.only(bottom: 80.0),
-              child: Text(
-                'Coloque o código QR dentro da área visível',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  fontSize: 15,
-                  shadows: const [Shadow(blurRadius: 10, color: Colors.black)],
+              child: Semantics(
+                liveRegion: true,
+                label:
+                    'Coloque o código QR dentro da área visível. A leitura é automática.',
+                child: Text(
+                  'Coloque o código QR dentro da área visível',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 15,
+                    shadows: const [
+                      Shadow(blurRadius: 10, color: Colors.black),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -230,8 +248,12 @@ class _ScannerPageState extends State<ScannerPage>
           if (_isProcessing)
             Container(
               color: Colors.black54,
-              child: const Center(
-                child: CircularProgressIndicator(color: Colors.white),
+              child: Center(
+                child: Semantics(
+                  label: 'A processar fatura',
+                  liveRegion: true,
+                  child: const CircularProgressIndicator(color: Colors.white),
+                ),
               ),
             ),
         ],

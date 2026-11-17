@@ -279,6 +279,7 @@ class _CategoryEditorPageState extends State<CategoryEditorPage> {
                             size: 20,
                             color: Colors.grey,
                           ),
+                          tooltip: 'Eliminar subcategoria',
                           onPressed: () => _deleteSubcategory(category, sub),
                         ),
                       ),

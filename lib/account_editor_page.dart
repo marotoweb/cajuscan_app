@@ -144,11 +144,14 @@ class _AccountEditorPageState extends State<AccountEditorPage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _accounts.isEmpty
-          ? const Center(
+          ? Center(
               child: Text(
                 'Nenhuma conta criada.\nImporte do Cashew ou toque em "+".',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey, fontSize: 16),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 16,
+                ),
               ),
             )
           : ListView.builder(
@@ -163,11 +166,13 @@ class _AccountEditorPageState extends State<AccountEditorPage> {
                     children: [
                       IconButton(
                         icon: const Icon(Icons.edit, color: Colors.blue),
+                        tooltip: 'Editar conta',
                         onPressed: () =>
                             _showAccountDialog(oldName: account, index: index),
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
+                        tooltip: 'Eliminar conta',
                         onPressed: () => _deleteAccount(index),
                       ),
                     ],
@@ -176,6 +181,7 @@ class _AccountEditorPageState extends State<AccountEditorPage> {
               },
             ),
       floatingActionButton: FloatingActionButton(
+        tooltip: 'Adicionar conta',
         onPressed: () => _showAccountDialog(),
         child: const Icon(Icons.add),
       ),
