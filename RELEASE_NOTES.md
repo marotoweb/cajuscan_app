@@ -1,7 +1,7 @@
 ## Unreleased
 
 ### 🛠️ Correções e Ajustes
-- **Acessibilidade (Definições):** A opção "Sobre CajuScan" passa a poder ser totalmente revelada acima da barra de navegação do sistema, garantindo um alvo de toque de pelo menos 48 dp (issue #11).
+- **Acessibilidade (Definições):** A opção "Sobre CajuScan" passa a estar num ícone de informação na barra superior, sempre visível e com um alvo de toque de 48×48 dp. A lista de definições deixa de ter itens cortados no fundo (issue #11).
 
 ### 📝 Documentação
 - **README:** Botão "Buy Me a Coffee" redimensionado e compatível com GitHub e GitLab (atributos `width`/`height` em vez de CSS).
