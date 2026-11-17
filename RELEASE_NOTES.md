@@ -1,7 +1,8 @@
 ## Unreleased
 
 ### 🛠️ Correções e Ajustes
-- **Acessibilidade (Definições):** A opção "Sobre CajuScan" passa a estar num ícone de informação na barra superior, sempre visível e com um alvo de toque de 48×48 dp. A lista de definições deixa de ter itens cortados no fundo (issue #11).
+- **Acessibilidade (Definições):** A opção "Sobre CajuScan" fica num footer fixo, sempre visível acima da barra de navegação do sistema e com um alvo de toque de 48 dp (issue #11).
+- **Definições mais simples:** As opções de exportação e importação passam a estar agrupadas numa única entrada "Importar / Exportar", libertando espaço na lista.
 
 ### 📝 Documentação
 - **README:** Botão "Buy Me a Coffee" redimensionado e compatível com GitHub e GitLab (atributos `width`/`height` em vez de CSS).
