@@ -1,0 +1,67 @@
+# .github/workflows/beta-builder.yml
+
+# Compila APKs de teste assinados com a chave de release, sem criar tag ou
+# release. Útil para testar builds sem que o F-Droid os apanhe.
+
+name: Build Beta APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag ou commit a compilar'
+        required: true
+        default: 'main'
+
+jobs:
+  build-android:
+    name: Build Flutter Beta APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref }}
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.6'
+          channel: 'stable'
+          cache: false
+
+      - name: Install dependencies
+        run: flutter pub get --enforce-lockfile
+
+      - name: Decode Keystore and Create Properties
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > upload-keystore.jks
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=../../upload-keystore.jks" >> android/key.properties
+
+      - name: Patch and Clean for F-Droid Match
+        run: |
+          PUB_CACHE="${HOME}/.pub-cache"
+          find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e '1a add_link_options("LINKER:--build-id=none")' {} \;
+          find "$PUB_CACHE" -name "CMakeLists.txt" -path "*flutter_zxing*" -exec sed -i -e "1a add_compile_options(\"-ffile-prefix-map=$GITHUB_WORKSPACE=/tmp/build\")" {} \;
+
+      - name: Build APK
+        run: |
+          export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
+          flutter build apk --release --split-per-abi --no-tree-shake-icons
+
+      - name: Upload beta APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: cajuscan-beta-${{ github.run_number }}
+          path: build/app/outputs/flutter-apk/app-*-release.apk
+          if-no-files-found: error
