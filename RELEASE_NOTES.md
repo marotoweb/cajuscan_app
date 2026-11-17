@@ -1,5 +1,8 @@
 ## Unreleased
 
+### ✨ Novidades
+- **Ecrã inicial:** Novo fundo ilustrado no ecrã principal, tornando a seleção do método de leitura mais apelativa.
+
 ### 🛠️ Correções e Ajustes
 - **Acessibilidade (Definições):** A opção "Sobre CajuScan" fica num footer fixo, sempre visível acima da barra de navegação do sistema e com um alvo de toque de 48 dp (issue #11).
 - **Definições mais simples:** As opções de exportação e importação passam a estar agrupadas numa única entrada "Importar / Exportar", libertando espaço na lista.

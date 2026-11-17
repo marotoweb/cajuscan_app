@@ -276,45 +276,55 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              const Spacer(),
-              const Text(
-                'Selecione o método de leitura da fatura.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.w500,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/home_background.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SafeArea(
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                const Spacer(),
+                const Text(
+                  'Selecione o método de leitura da fatura.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 40),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.qr_code_scanner),
-                label: const Text('Digitalizar fatura'),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const ScannerPage(),
-                    ),
-                  );
-                },
-                style: btnStyle,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.file_present),
-                label: const Text('Importar ficheiro (PDF/Foto)'),
-                onPressed: () => _handleFileImport(context),
-                style: btnStyle,
-              ),
-              const SizedBox(height: 40),
-            ],
+                const SizedBox(height: 40),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.qr_code_scanner),
+                  label: const Text('Digitalizar fatura'),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const ScannerPage(),
+                      ),
+                    );
+                  },
+                  style: btnStyle,
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.file_present),
+                  label: const Text('Importar ficheiro (PDF/Foto)'),
+                  onPressed: () => _handleFileImport(context),
+                  style: btnStyle,
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),
